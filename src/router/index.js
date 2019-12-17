@@ -67,6 +67,47 @@ export const constantRoutes = [
   },
 
   {
+    path: '/mycar',
+    component: Layout,
+    redirect: '/mycar/carinfo',
+    name: 'mycar',
+    meta: { title: '我的车辆', icon: 'dashboard' },
+    children: [{
+      path: 'carinfo',
+      name: 'Carinfo',
+      component: () => import('@/views/mycar/carinfo/index'),
+      meta: { title: '车辆信息', icon: 'dashboard' }
+    }, {
+      path: 'carroute',
+      name: 'Carroute',
+      component: () => import('@/views/mycar/carroute/index'),
+      meta: { title: '车辆行程', icon: 'dashboard' }
+    }
+    ]
+  },
+  {
+    path: '/contact',
+    component: Layout,
+    redirect: '/contact',
+    children: [{
+      path: 'index',
+      name: 'contact',
+      component: () => import('@/views/contact/index'),
+      meta: { title: '企业通讯录', icon: 'dashboard' }
+    }]
+  },
+  {
+    path: '/account',
+    component: Layout,
+    redirect: '/account',
+    children: [{
+      path: 'index',
+      name: 'account',
+      component: () => import('@/views/account/index'),
+      meta: { title: '账号管理', icon: 'dashboard' }
+    }]
+  },
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',
