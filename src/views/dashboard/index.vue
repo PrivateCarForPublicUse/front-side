@@ -11,7 +11,7 @@
           <div class="search-form-left">
             <svg-icon icon-class="sorting" @click="changeStartAndEnd" />
           </div>
-          <el-form-item label="起">
+          <el-form-item label="起" class="input-label">
             <el-autocomplete
               v-model="start"
               class="input-text"
@@ -24,6 +24,7 @@
             v-for="route in routeFormSubRoutes.routes"
             :key="route.key"
             :label="'经'"
+            class="input-label"
           >
             <el-autocomplete
               v-model="route.value"
@@ -34,7 +35,7 @@
             />
             <svg-icon icon-class="delete" @click="deleteSubRoute(route)" />
           </el-form-item>
-          <el-form-item label="终" prop="end">
+          <el-form-item label="终" prop="end" class="input-label">
             <el-autocomplete
               v-model="end"
               class="input-text"
@@ -130,8 +131,6 @@ export default {
       })
     },
     handleChangeCenter() {
-      console.log(this.chooseCity)
-      console.log(this.chooseCityIndex)
       var address = this.chooseCity + '市'
       AMap.plugin('AMap.Geocoder', () => {
         var geocoder = new AMap.Geocoder()
@@ -206,7 +205,8 @@ export default {
   top: 10px;
   height: auto;
   width: 330px;
-  background-color: black;
+  border-radius: 5px;
+  background-color: rgb(48, 65, 86);
 }
 
 .input-container {
@@ -240,5 +240,9 @@ html,
 #container {
   width: 100%;
   height: 100%;
+}
+.input-label >>> .el-form-item__label {
+  color: white;
+  font-weight: normal;
 }
 </style>

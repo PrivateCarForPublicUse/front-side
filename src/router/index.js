@@ -55,6 +55,17 @@ export const constantRoutes = [
     }]
   },
   {
+    path: '/myreimbursement',
+    component: Layout,
+    redirect: '/myreimbursement',
+    children: [{
+      path: 'index',
+      name: 'Myreimbursement',
+      component: () => import('@/views/myreimbursement/index'),
+      meta: { title: '我的报销', icon: 'dashboard' }
+    }]
+  },
+  {
     path: '/myroute',
     component: Layout,
     redirect: '/myroute',
@@ -65,7 +76,17 @@ export const constantRoutes = [
       meta: { title: '我的行程', icon: 'dashboard' }
     }]
   },
-
+  {
+    path: '/publiccar',
+    component: Layout,
+    redirect: '/publiccar',
+    children: [{
+      path: 'index',
+      name: 'Publiccar',
+      component: () => import('@/views/publiccar/index'),
+      meta: { title: '共有车库', icon: 'dashboard' }
+    }]
+  },
   {
     path: '/mycar',
     component: Layout,
