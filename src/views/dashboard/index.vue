@@ -53,7 +53,7 @@ import { mapGetters } from 'vuex'
 import MapLoader from '@/utils/map-loader.js'
 export default {
   name: 'Dashboard',
-  data () {
+  data() {
     return {
       start: '',
       end: '',
@@ -70,19 +70,19 @@ export default {
     ...mapGetters([
       'name'
     ]),
-    routeFormRoutes () {
+    routeFormRoutes() {
       var temp = JSON.parse(JSON.stringify(this.routeFormSubRoutes))
       temp.unshift(this.start)
       temp.push(this.end)
       return temp
     }
   },
-  mounted () {
+  mounted() {
     this.init()
     console.log('重新渲染')
   },
 
-  created () {
+  created() {
     for (var index = 0; index < this.citys.length; index++) {
       this.options.push({ value: index, label: this.citys[index] })
     }
@@ -90,19 +90,19 @@ export default {
     console.log('创建')
   },
   methods: {
-    addSubRoute () {
+    addSubRoute() {
       this.routeFormSubRoutes.routes.push({
         value: '',
         key: Date.now()
       })
     },
-    deleteSubRoute (item) {
+    deleteSubRoute(item) {
       var index = this.routeFormSubRoutes.routes.indexOf(item)
       if (index !== -1) {
         this.routeFormSubRoutes.routes.splice(index, 1)
       }
     },
-    init () {
+    init() {
       const that = this
       MapLoader().then(AMap => {
         that.map = new AMap.Map('container', {
