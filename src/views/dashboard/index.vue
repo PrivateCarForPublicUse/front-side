@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 <template>
   <div class="dashboard-container">
     <div class="amap-wrapper">
@@ -8,25 +9,39 @@
       <el-form :inline="true">
         <div class="input-container">
           <div class="search-form-left">
-            <svg-icon icon-class="sorting" />
+            <svg-icon icon-class="sorting" @click="changeStartAndEnd" />
           </div>
           <el-form-item label="起">
-            <el-input v-model="start" class="input-text" placeholder="出发地" />
+            <el-autocomplete
+              v-model="start"
+              class="input-text"
+              placeholder="出发地"
+              :fetch-suggestions="querySearch"
+              :trigger-on-focus="false"
+            />
           </el-form-item>
           <el-form-item
             v-for="route in routeFormSubRoutes.routes"
             :key="route.key"
             :label="'经'"
           >
-            <el-input
+            <el-autocomplete
               v-model="route.value"
               class="input-text"
               placeholder="途径节点"
+              :fetch-suggestions="querySearch"
+              :trigger-on-focus="false"
             />
             <svg-icon icon-class="delete" @click="deleteSubRoute(route)" />
           </el-form-item>
           <el-form-item label="终" prop="end">
-            <el-input v-model="end" class="input-text" placeholder="目的地" />
+            <el-autocomplete
+              v-model="end"
+              class="input-text"
+              placeholder="目的地"
+              :fetch-suggestions="querySearch"
+              :trigger-on-focus="false"
+            />
             <svg-icon icon-class="round_add_fill" @click="addSubRoute" />
           </el-form-item>
         </div>
@@ -36,7 +51,12 @@
       </el-form>
     </div>
     <div class="select-location">
-      <el-select v-model="chooseCity" filterable placeholder="请选择">
+      <el-select
+        v-model="chooseCity"
+        filterable
+        placeholder="请选择"
+        @change="handleChangeCenter"
+      >
         <el-option
           v-for="item in options"
           :key="item.value"
@@ -55,6 +75,7 @@ export default {
   name: 'Dashboard',
   data() {
     return {
+      adviceList: [],
       start: '',
       end: '',
       routeFormSubRoutes: {
@@ -62,8 +83,9 @@ export default {
       },
       citys: ['北京', '杭州', '上海', '宁波'],
       options: [],
-      chooseCity: '杭州',
+      chooseCity: '',
       map: null
+      // chooseCityIndex: 0
     }
   },
   computed: {
@@ -79,17 +101,51 @@ export default {
   },
   mounted() {
     this.init()
-    console.log('重新渲染')
   },
-
   created() {
     for (var index = 0; index < this.citys.length; index++) {
-      this.options.push({ value: index, label: this.citys[index] })
+      this.options.push({ value: this.citys[index], label: this.citys[index] })
     }
     this.init()
     console.log('创建')
   },
   methods: {
+    querySearch(queryString, cb) {
+      AMap.plugin('AMap.Autocomplete', (currentCity = this.chooseCity, keyword = queryString) => {
+        // 实例化Autocomplete
+        var autoOptions = {
+          // city 限定城市，默认全国
+          city: currentCity
+        }
+        var autoComplete = new AMap.Autocomplete(autoOptions)
+        autoComplete.search(keyword, (status, result) => {
+          // 搜索成功时，result即是对应的匹配数据
+          var values = []
+          for (var tip = 0; tip < result.tips.length; tip++) {
+            console.log(result.tips[tip])
+            values.push({ value: result.tips[tip].name })
+          }
+          cb(values)
+        })
+      })
+    },
+    handleChangeCenter() {
+      console.log(this.chooseCity)
+      console.log(this.chooseCityIndex)
+      var address = this.chooseCity + '市'
+      AMap.plugin('AMap.Geocoder', () => {
+        var geocoder = new AMap.Geocoder()
+        geocoder.getLocation(address, (status, result) => {
+          if (status === 'complete' && result.info === 'OK') {
+            // 经纬度
+            var lng = result.geocodes[0].location.lng
+            var lat = result.geocodes[0].location.lat
+            var position = new AMap.LngLat(lng, lat)
+            this.map.setCenter(position)
+          }
+        })
+      })
+    },
     addSubRoute() {
       this.routeFormSubRoutes.routes.push({
         value: '',
@@ -102,26 +158,36 @@ export default {
         this.routeFormSubRoutes.routes.splice(index, 1)
       }
     },
+    changeStartAndEnd() {
+      const temp = this.start
+      this.start = this.end
+      this.end = temp
+    },
     init() {
-      const that = this
+      // eslint-disable-next-line prefer-const
+      let that = this
       MapLoader().then(AMap => {
         that.map = new AMap.Map('container', {
           resizeEnable: true,
+          zoom: 10,
           lang: 'cn'
         })
+        console.log('inmap')
         AMap.plugin(['AMap.ToolBar', 'AMap.Scale'], () => {
           that.map.addControl(new AMap.ToolBar({ position: 'RB', liteStyle: true }))
           that.map.addControl(new AMap.Scale())
         })
-        this.chooseCity = AMap.plugin('AMap.CitySearch', () => {
+        AMap.plugin('AMap.CitySearch', () => {
           var citySearch = new AMap.CitySearch()
           citySearch.getLocalCity((status, result) => {
             if (status === 'complete' && result.info === 'OK') {
               // 查询成功，result即为当前所在城市信息
-              return result.city.slice(0, -1)
+              that.chooseCity = result.city.slice(0, -1)
             }
           })
         })
+      }, e => {
+        console.log('地图加载失败', e)
       })
     }
   }
