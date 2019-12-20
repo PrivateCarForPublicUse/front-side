@@ -363,6 +363,7 @@ export default {
         }
       }
       that.isIndeterminate = countedSize > 0 && countedSize < that.optionList.length
+      this.checkAll = countedSize === that.optionList.length
     },
     isDisabel(val) {
       let that = this
