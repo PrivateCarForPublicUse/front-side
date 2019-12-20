@@ -22,3 +22,13 @@ export function logout() {
     method: 'post'
   })
 }
+
+// 获取用户信息
+export function getUserInfo(params) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/',
+    method: 'get',
+    params
+  })
+}
