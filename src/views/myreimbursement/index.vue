@@ -6,6 +6,7 @@
         class="input-text"
         placeholder="输入搜索词"
         clearable
+        @clear="flashAllChecked"
       >
         <i slot="prefix" class="el-input__icon el-icon-search" />
       </el-input>
@@ -53,7 +54,23 @@
           </el-form>
         </template>
       </el-table-column>
-      <el-table-column type="selection" width="55" />
+      <!-- <el-table-column type="selection" width="55" /> -->
+      <el-table-column
+        align="left"
+        width="55"
+      >
+        <template slot="header" slot-scope="scope">
+          <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="handleCheckAllChange" />
+        </template>
+        <template slot-scope="scope">
+          <el-checkbox
+            :key="tables[scope.$index+(currentPage-1)*pageSize].id"
+            v-model="tables[scope.$index+(currentPage-1)*pageSize].checked"
+            :disabled="isDisabel(scope.$index)"
+            @change="handleCheckedItemsChange(scope.$index)"
+          />
+        </template>
+      </el-table-column>
       <el-table-column label="申请时间" width="180" align="center">
         <template slot-scope="scope">
           <i class="el-icon-time" />
@@ -121,6 +138,8 @@ export default {
   },
   data() {
     return {
+      checkAll: false,
+      isIndeterminate: false,
       pageSize: 10,
       currentPage: 1,
       reimburseOptions: [
@@ -143,7 +162,7 @@ export default {
       ],
       datalist: [
         {
-          id: 0,
+          id: 1,
           appleyTime: '2016-05-03',
           reason: '哈哈服务部外设计费来看时空裂缝克拉斯',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -152,7 +171,7 @@ export default {
           reimburseType: 1
         },
         {
-          id: 1,
+          id: 4,
           appleyTime: '2016-05-03',
           reason: '哈哈服务部外设计费来看时空裂缝克拉斯',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -161,7 +180,7 @@ export default {
           reimburseType: 2
         },
         {
-          id: 2,
+          id: 6,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -170,7 +189,7 @@ export default {
           reimburseType: -1
         },
         {
-          id: 3,
+          id: 8,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -179,7 +198,7 @@ export default {
           reimburseType: -1
         },
         {
-          id: 4,
+          id: 9,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -188,7 +207,7 @@ export default {
           reimburseType: -1
         },
         {
-          id: 4,
+          id: 12,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -197,7 +216,7 @@ export default {
           reimburseType: -1
         },
         {
-          id: 4,
+          id: 16,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -206,7 +225,7 @@ export default {
           reimburseType: -1
         },
         {
-          id: 4,
+          id: 17,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
@@ -215,31 +234,31 @@ export default {
           reimburseType: -1
         },
         {
-          id: 4,
+          id: 18,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
           routeLength: 60.22,
           cost: 62.33,
-          reimburseType: -1
+          reimburseType: 0
         },
         {
-          id: 4,
+          id: 29,
           appleyTime: '2016-05-03',
           reason: '测试是啊是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
           routeLength: 60.22,
           cost: 62.33,
-          reimburseType: -1
+          reimburseType: 0
         },
         {
-          id: 4,
+          id: 44,
           appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
+          reason: '测试不是啊不是啊',
           routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
           routeLength: 60.22,
           cost: 62.33,
-          reimburseType: -1
+          reimburseType: 0
         }
       ],
       multipleSelection: [],
@@ -263,24 +282,41 @@ export default {
               }
             }
           })(key, this.searchItems)
-          console.log()
           return String(dataNews[item]).toLowerCase().indexOf(search) > -1 || search === null
         })
       })
     },
     total() {
       return this.tables.length
+    },
+    optionList() {
+      let items = this.datalist
+      var tableOptions = []
+      for (var index in items) {
+        if (items[index].reimburseType === 0) { tableOptions.push(items[index].id) }
+      }
+      return tableOptions
     }
   },
   watch: {
-    tables() {
-      this.currentPage = 1
+    chooseType() {
+      if (this.chooseType !== '' && this.chooseType !== null) { this.currentPage = 1 }
+    },
+    searchReason() {
+      if (this.searchReason !== '' && this.searchReason !== null) {
+        this.flashAllChecked()
+        this.currentPage = 1
+      }
     }
   },
   created() {
     for (var index in this.datalist) {
       this.datalist[index].filledRoutes = this.fillingRoutes(this.datalist[index].routetest)
     }
+    this.datalist.map(item => {
+      this.$set(item, 'checked', false)
+      return item
+    })
   },
   methods: {
     handleSelectionChange(val) {
@@ -301,6 +337,47 @@ export default {
     },
     handleCurrentChange(val) {
       this.currentPage = val
+    },
+    handleCheckAllChange(val) {
+      let that = this
+      for (let i in that.tables) {
+        if (that.tables[i].reimburseType === 0) {
+          if (val) {
+            that.tables[i].checked = true
+          } else {
+            that.tables[i].checked = false
+          }
+        }
+      }
+      that.isIndeterminate = false
+    },
+    handleCheckedItemsChange(index) {
+      // 筛选后的全选和非全选
+      let that = this
+      index = index + (that.currentPage - 1) * that.pageSize
+      that.tables[index].isChecked = !that.tables[index].isChecked
+      let countedSize = 0
+      for (let i in that.tables) {
+        if (that.tables[i].checked) {
+          countedSize++
+        }
+      }
+      that.isIndeterminate = countedSize > 0 && countedSize < that.optionList.length
+    },
+    isDisabel(val) {
+      let that = this
+      var reimburse = that.tables[val + (that.currentPage - 1) * that.pageSize].reimburseType
+      return reimburse !== 0
+    },
+    flashAllChecked() {
+      let that = this
+      that.checkAll = false
+      for (let i in that.tables) {
+        if (that.tables[i].reimburseType === 0) {
+          that.tables[i].checked = false
+        }
+      }
+      that.isIndeterminate = false
     }
   }
 }
