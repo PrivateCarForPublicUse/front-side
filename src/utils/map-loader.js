@@ -18,7 +18,6 @@ export default function MapLoader() {
     }
     window.initAMap = () => {
       resolve(window.AMap)
-      initAMapUI()
     }
   })
 }
