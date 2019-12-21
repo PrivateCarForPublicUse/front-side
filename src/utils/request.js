@@ -2,6 +2,7 @@ import axios from 'axios'
 import { MessageBox, Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
+import qs from 'qs'
 
 // create an axios instance
 const service = axios.create({
@@ -9,11 +10,20 @@ const service = axios.create({
   // withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000 // request timeout
 })
-
+// axios.defaults.headers.post['Content-Type'] =
+// 'application/x-www-form-urlencoded;charset=UTF-8';
 // request interceptor
+
+// service.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
+
 service.interceptors.request.use(
   config => {
     // do something before request is sent
+
+    // 处理post传参
+    // if (config.method === 'post') {
+    //   config.data = qs.stringify(config.data)
+    // }
 
     if (store.getters.token) {
       // let each request carry token
@@ -46,7 +56,7 @@ service.interceptors.response.use(
     const res = response.data
 
     // if the custom code is not 20000, it is judged as an error.
-    if (res.code !== 20000) {
+    if (res.code !== 20000 && res.code !== 200) {
       Message({
         message: res.message || 'Error',
         type: 'error',
