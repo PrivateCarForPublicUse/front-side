@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 <template>
   <div class="dashboard-container">
     <div class="amap-wrapper">
@@ -113,6 +112,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import MapLoader from '@/utils/map-loader.js'
+import cityslist from '@/utils/city.js'
 export default {
   name: 'Dashboard',
   data() {
@@ -122,7 +122,7 @@ export default {
       end: '',
       routeFormSubRoutes: [],
       currentInputIndex: -1,
-      citys: ['北京', '杭州', '上海', '宁波'],
+      citys: [],
       options: [],
       chooseCity: '',
       map: null,
@@ -149,6 +149,7 @@ export default {
     this.init()
   },
   created() {
+    this.initcitys()
     for (var index = 0; index < this.citys.length; index++) {
       this.options.push({ value: this.citys[index], label: this.citys[index] })
     }
@@ -193,8 +194,26 @@ export default {
     handleSelect(item) {
       let that = this
       if (item.location instanceof AMap.LngLat) {
-        that.map.setCenter(item.location)
+        if (item.district.match('自治区') !== null) {
+          try {
+            this.chooseCity = item.district.split('自治区')[1].split('市')[0]
+          } catch (e) {
+            console.log('没有具体信息')// 优化可以做定位
+          }
+        } else if (item.district.match('台湾') !== null) {
+          this.chooseCity = '台湾'
+        } else if (item.district.match('特别行政区') !== null) {
+          this.chooseCity = item.district.split('特别行政区')[0]
+        } else {
+          try {
+            console.log(item.district)
+            this.chooseCity = item.district.split('省')[1].split('市')[0]
+          } catch (e) {
+            console.log('没有具体信息')// 优化可以做定位
+          }
+        }
         that.map.setZoom(13)
+        that.map.setCenter(item.location)
         that.addMarker(this.currentInputIndex, item.location)
       }
     },
@@ -262,8 +281,11 @@ export default {
     },
     removeMarker(index) {
       let that = this
-      that.map.remove(that.markers[index])
-      delete that.markers[index]
+      try {
+        that.map.remove(that.markers[index])
+        delete that.markers[index]
+      // eslint-disable-next-line no-empty
+      } catch (e) {}
     },
     deleteSubRoute(item) {
       var index = this.routeFormSubRoutes.indexOf(item)
@@ -276,9 +298,36 @@ export default {
       let temp = this.start
       this.start = this.end
       this.end = temp
+      try {
+        let startPosition = this.markers['0'].getPosition()
+        try {
+          let stopPosition = this.markers['-1'].getPosition()
+          this.markers['0'].setPosition(stopPosition)
+          this.markers['-1'].setPosition(startPosition)
+        } catch (e) {
+          this.removeMarker(0)
+          this.addMarker(-1, startPosition)
+        }
+      } catch (e) {
+        try {
+          let stopPosition = this.markers['-1'].getPosition()
+          this.removeMarker(-1)
+          this.addMarker(0, stopPosition)
+        } catch (e) {
+          console.log('没有需要交换的标记')
+        }
+      }
     },
     changeInputIndex(index) {
       this.currentInputIndex = index
+    },
+    initcitys() {
+      let i; let j; let that = this
+      for (i in cityslist) {
+        for (j in cityslist[i].city) {
+          that.citys.push(cityslist[i].city[j].name)
+        }
+      }
     },
     init() {
       let that = this
@@ -300,6 +349,16 @@ export default {
               that.chooseCity = result.city.slice(0, -1)
             }
           })
+        })
+        AMap.plugin('AMap.Geolocation', () => {
+          var geolocation = new AMap.Geolocation({
+            enableHighAccuracy: false, // 是否使用高精度定位，默认:true
+            timeout: 10000, // 超过10秒后停止定位，默认：5s
+            buttonPosition: 'RB', // 定位按钮的停靠位置
+            buttonOffset: new AMap.Pixel(15, 140), // 定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+            zoomToAccuracy: false // 定位成功后是否自动调整地图视野到定位点
+          })
+          that.map.addControl(geolocation)
         })
         initAMapUI()
       }, e => {
@@ -373,8 +432,4 @@ html,
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.amap-icon img{
-            width: 25px;
-            height: 34px;
-        }
 </style>
