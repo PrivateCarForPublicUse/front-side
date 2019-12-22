@@ -14,40 +14,81 @@
           <el-form-item label="起" class="input-label">
             <el-autocomplete
               v-model="start"
+              popper-class="my-autocomplete"
               class="input-text"
+              size="medium"
               placeholder="出发地"
               :fetch-suggestions="querySearch"
               :trigger-on-focus="false"
-            />
+              @focus="changeInputIndex(0)"
+              @select="handleSelect"
+            >
+              <i
+                slot="suffix"
+                class="el-icon-location-outline"
+              />
+              <template slot-scope="{ item }">
+                <div class="name">{{ item.value }}</div>
+                <div class="addr">{{ item.district }}</div>
+              </template>
+            </el-autocomplete>
           </el-form-item>
           <el-form-item
-            v-for="route in routeFormSubRoutes.routes"
-            :key="route.key"
+            v-for="route in routeFormSubRoutes.length"
+            :key="routeFormSubRoutes[route-1].key"
             :label="'经'"
             class="input-label"
           >
             <el-autocomplete
-              v-model="route.value"
+              v-model="routeFormSubRoutes[route-1].value"
+              popper-class="my-autocomplete"
+              size="medium"
               class="input-text"
               placeholder="途径节点"
               :fetch-suggestions="querySearch"
               :trigger-on-focus="false"
-            />
-            <svg-icon icon-class="delete" @click="deleteSubRoute(route)" />
+              @focus="changeInputIndex(route)"
+              @select="handleSelect"
+            >
+              <i
+                slot="suffix"
+                class="el-icon-location-outline"
+              />
+              <template slot-scope="{ item }">
+                <div class="name">{{ item.value }}</div>
+                <div class="addr">{{ item.district }}</div>
+              </template>
+            </el-autocomplete>
+            <svg-icon icon-class="delete" @click="deleteSubRoute(routeFormSubRoutes[route-1])" />
           </el-form-item>
           <el-form-item label="终" prop="end" class="input-label">
             <el-autocomplete
               v-model="end"
+              popper-class="my-autocomplete"
+              size="medium"
               class="input-text"
               placeholder="目的地"
               :fetch-suggestions="querySearch"
               :trigger-on-focus="false"
-            />
+              @focus="changeInputIndex(-1)"
+              @select="handleSelect"
+            >
+              <i
+                slot="suffix"
+                class="el-icon-location-outline"
+              />
+              <template slot-scope="{ item }">
+                <div class="name">{{ item.value }}</div>
+                <div class="addr">{{ item.district }}</div>
+              </template>
+            </el-autocomplete>
             <svg-icon icon-class="round_add_fill" @click="addSubRoute" />
           </el-form-item>
         </div>
-        <div class="input-submit">
-          <el-button>提交</el-button>
+        <div
+          class="input-submit"
+        >
+          <el-button size="medium">提交</el-button>
         </div>
       </el-form>
     </div>
@@ -79,13 +120,14 @@ export default {
       adviceList: [],
       start: '',
       end: '',
-      routeFormSubRoutes: {
-        routes: []
-      },
+      routeFormSubRoutes: [],
+      currentInputIndex: -1,
       citys: ['北京', '杭州', '上海', '宁波'],
       options: [],
       chooseCity: '',
-      map: null
+      map: null,
+      icons: {},
+      markers: []
       // chooseCityIndex: 0
     }
   },
@@ -94,7 +136,10 @@ export default {
       'name'
     ]),
     routeFormRoutes() {
-      var temp = JSON.parse(JSON.stringify(this.routeFormSubRoutes))
+      let index; let temp = []
+      for (index in this.routeFormSubRoutes) {
+        temp.push(this.routeFormSubRoutes[index].value)
+      }
       temp.unshift(this.start)
       temp.push(this.end)
       return temp
@@ -107,8 +152,6 @@ export default {
     for (var index = 0; index < this.citys.length; index++) {
       this.options.push({ value: this.citys[index], label: this.citys[index] })
     }
-    this.init()
-    console.log('创建')
   },
   methods: {
     querySearch(queryString, cb) {
@@ -122,9 +165,11 @@ export default {
         autoComplete.search(keyword, (status, result) => {
           // 搜索成功时，result即是对应的匹配数据
           var values = []
-          for (var tip = 0; tip < result.tips.length; tip++) {
-            console.log(result.tips[tip])
-            values.push({ value: result.tips[tip].name })
+          if (result.tips instanceof Array) {
+            for (var tip = 0; tip < result.tips.length; tip++) {
+              // console.log(result.tips[tip])
+              values.push({ value: result.tips[tip].name, district: result.tips[tip].district + result.tips[tip].address, location: result.tips[tip].location })
+            }
           }
           cb(values)
         })
@@ -145,25 +190,97 @@ export default {
         })
       })
     },
+    handleSelect(item) {
+      let that = this
+      if (item.location instanceof AMap.LngLat) {
+        that.map.setCenter(item.location)
+        that.map.setZoom(13)
+        that.addMarker(this.currentInputIndex, item.location)
+      }
+    },
     addSubRoute() {
-      this.routeFormSubRoutes.routes.push({
+      this.routeFormSubRoutes.push({
         value: '',
         key: Date.now()
       })
     },
-    deleteSubRoute(item) {
-      var index = this.routeFormSubRoutes.routes.indexOf(item)
-      if (index !== -1) {
-        this.routeFormSubRoutes.routes.splice(index, 1)
+    addMarker(index, position) {
+      let that = this
+      try {
+        let oldmarker = that.markers[index]
+        oldmarker.setPosition(position)
+      } catch (e) {
+        AMapUI.loadUI(['overlay/SimpleMarker'], function(SimpleMarker) {
+          if (index === 0) {
+            var startmarker = new SimpleMarker({
+              iconLabel: {
+                innerHTML: '起',
+                style: {
+                  color: '#fff',
+                  fontSize: '90%',
+                  marginTop: '2px'
+                }},
+              iconTheme: 'default',
+              iconStyle: 'blue',
+              map: that.map
+            })
+            that.map.add(startmarker)
+            that.markers[index] = startmarker
+          } else if (index === -1) {
+            var endmarker = new SimpleMarker({
+              iconLabel: {
+                innerHTML: '终',
+                style: {
+                  color: '#fff',
+                  fontSize: '90%',
+                  marginTop: '2px'
+                }},
+              iconTheme: 'default',
+              iconStyle: 'red',
+              map: that.map
+            })
+            that.map.add(endmarker)
+            that.markers[index] = endmarker
+          } else {
+            var viamarker = new SimpleMarker({
+              iconLabel: {
+                innerHTML: '经',
+                style: {
+                  color: '#fff',
+                  fontSize: '90%',
+                  marginTop: '2px'
+                }},
+              iconTheme: 'default',
+              iconStyle: 'green',
+              map: that.map
+            })
+            that.map.add(viamarker)
+            that.markers[index] = viamarker
+          }
+        })
       }
     },
+    removeMarker(index) {
+      let that = this
+      that.map.remove(that.markers[index])
+      delete that.markers[index]
+    },
+    deleteSubRoute(item) {
+      var index = this.routeFormSubRoutes.indexOf(item)
+      if (index !== -1) {
+        this.routeFormSubRoutes.splice(index, 1)
+      }
+      this.removeMarker(index + 1)
+    },
     changeStartAndEnd() {
-      const temp = this.start
+      let temp = this.start
       this.start = this.end
       this.end = temp
     },
+    changeInputIndex(index) {
+      this.currentInputIndex = index
+    },
     init() {
-      // eslint-disable-next-line prefer-const
       let that = this
       MapLoader().then(AMap => {
         that.map = new AMap.Map('container', {
@@ -171,7 +288,6 @@ export default {
           zoom: 10,
           lang: 'cn'
         })
-        console.log('inmap')
         AMap.plugin(['AMap.ToolBar', 'AMap.Scale'], () => {
           that.map.addControl(new AMap.ToolBar({ position: 'RB', liteStyle: true }))
           that.map.addControl(new AMap.Scale())
@@ -185,6 +301,7 @@ export default {
             }
           })
         })
+        initAMapUI()
       }, e => {
         console.log('地图加载失败', e)
       })
@@ -226,6 +343,7 @@ export default {
 }
 .input-text {
   width: 210px;
+  height: 20px;
 }
 .select-location {
   width: 90px;
@@ -245,4 +363,18 @@ html,
   color: white;
   font-weight: normal;
 }
+.my-autocomplete .addr >>>{
+  position: relative;
+  top:-8px;
+  font-size: 12px;
+  color: #b4b4b4;
+}
+.my-autocomplete .name >>>{
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.amap-icon img{
+            width: 25px;
+            height: 34px;
+        }
 </style>
