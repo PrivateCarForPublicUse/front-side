@@ -10,12 +10,12 @@
           <div class="search-form-left">
             <svg-icon icon-class="sorting" @click="changeStartAndEnd" />
           </div>
-          <el-form-item label="起" class="input-label">
+          <el-form-item label="起点" class="input-label">
             <el-autocomplete
               v-model="start"
               popper-class="my-autocomplete"
               class="input-text"
-              size="medium"
+              size="small"
               placeholder="出发地"
               :fetch-suggestions="querySearch"
               :trigger-on-focus="false"
@@ -35,13 +35,13 @@
           <el-form-item
             v-for="route in routeFormSubRoutes.length"
             :key="routeFormSubRoutes[route-1].key"
-            :label="'经'"
+            :label="'途经'"
             class="input-label"
           >
             <el-autocomplete
               v-model="routeFormSubRoutes[route-1].value"
               popper-class="my-autocomplete"
-              size="medium"
+              size="small"
               class="input-text"
               placeholder="途径节点"
               :fetch-suggestions="querySearch"
@@ -60,11 +60,11 @@
             </el-autocomplete>
             <svg-icon icon-class="delete" @click="deleteSubRoute(routeFormSubRoutes[route-1])" />
           </el-form-item>
-          <el-form-item label="终" prop="end" class="input-label">
+          <el-form-item label="终点" prop="end" class="input-label">
             <el-autocomplete
               v-model="end"
               popper-class="my-autocomplete"
-              size="medium"
+              size="small"
               class="input-text"
               placeholder="目的地"
               :fetch-suggestions="querySearch"
@@ -84,10 +84,48 @@
             <svg-icon icon-class="round_add_fill" @click="addSubRoute" />
           </el-form-item>
         </div>
+        <el-form-item label="原因" class="input-label input-label-right">
+          <div
+            class="input-text"
+          >
+            <el-input
+              v-model="inputReason"
+              class="input-reason"
+              :autosize="{ minRows: 2, maxRows: 3}"
+              type="textarea"
+              size="small"
+              placeholder="申请理由和原因"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item label="开始" class="input-label input-label-right">
+          <div class="block">
+            <el-date-picker
+              v-model="inputTime"
+              size="small"
+              type="datetime"
+              align="right"
+              placeholder="开始时间"
+              :default-time="'12:00:00'"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item label="结束" class="input-label input-label-right">
+          <div class="block">
+            <el-date-picker
+              v-model="inputTime"
+              size="small"
+              type="datetime"
+              align="right"
+              placeholder="结束时间"
+              :default-time="'18:00:00'"
+            />
+          </div>
+        </el-form-item>
         <div
           class="input-submit"
         >
-          <el-button size="medium">提交</el-button>
+          <el-button size="small" class="submit-button">提交申请</el-button>
         </div>
       </el-form>
     </div>
@@ -120,6 +158,7 @@ export default {
       adviceList: [],
       start: '',
       end: '',
+      inputReason: '',
       routeFormSubRoutes: [],
       currentInputIndex: -1,
       citys: [],
@@ -127,7 +166,9 @@ export default {
       chooseCity: '',
       map: null,
       icons: {},
-      markers: []
+      markers: [],
+      currentCity: '',
+      inputTime: ''
       // chooseCityIndex: 0
     }
   },
@@ -347,6 +388,7 @@ export default {
             if (status === 'complete' && result.info === 'OK') {
               // 查询成功，result即为当前所在城市信息
               that.chooseCity = result.city.slice(0, -1)
+              that.currentCity = that.chooseCity
             }
           })
         })
@@ -359,8 +401,15 @@ export default {
             zoomToAccuracy: false // 定位成功后是否自动调整地图视野到定位点
           })
           that.map.addControl(geolocation)
+          geolocation.getCurrentPosition((status, result) => {
+            if (status !== 'complete') {
+              console.log('定位失败')
+            }
+          })
+          AMap.event.addListener(geolocation, 'complete', () => {
+            that.chooseCity = that.currentCity
+          })
         })
-        initAMapUI()
       }, e => {
         console.log('地图加载失败', e)
       })
@@ -386,13 +435,13 @@ export default {
 }
 
 .input-container {
-  margin: 10%;
+  margin: 25px;
   margin-bottom: 0;
   position: relative;
 }
 .search-form-left {
   position: absolute;
-  top: 43%;
+  top: 48%;
   transform: translateY(-50%);
   left: -20px;
 }
@@ -401,8 +450,7 @@ export default {
   margin-bottom: 25px;
 }
 .input-text {
-  width: 210px;
-  height: 20px;
+  width: 220px;
 }
 .select-location {
   width: 90px;
@@ -422,6 +470,14 @@ html,
   color: white;
   font-weight: normal;
 }
+
+.el-form--inline >>> .el-form-item{
+  margin-bottom: 7px;
+  margin-right: 0;
+}
+.input-label-right{
+  margin-left: 25px;
+}
 .my-autocomplete .addr >>>{
   position: relative;
   top:-8px;
@@ -431,5 +487,13 @@ html,
 .my-autocomplete .name >>>{
   text-overflow: ellipsis;
   overflow: hidden;
+}
+.submit-button{
+  font-size: 14px;
+  color: rgb(48, 65, 86);
+}
+.input-reason{
+  margin-bottom: 5px;
+  margin-top:5px;
 }
 </style>
