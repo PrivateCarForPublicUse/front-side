@@ -98,14 +98,27 @@
             />
           </div>
         </el-form-item>
+        <el-form-item label="选择车辆类型" class="input-label input-car-label">
+          <el-radio v-model="carPrivate" class="input-label" label="1">我的</el-radio>
+          <el-radio v-model="carPrivate" label="2">共有</el-radio>
+
+        </el-form-item>
+        <el-form-item label="车辆" class="input-label input-label-right">
+          <el-input
+            v-model="chooseCar"
+            class="input-text"
+            size="small"
+            placeholder="选择出行车辆"
+          />
+        </el-form-item>
         <el-form-item label="开始" class="input-label input-label-right">
           <div class="block">
             <el-date-picker
-              v-model="inputTime"
+              v-model="inputStartTime"
               size="small"
               type="datetime"
               align="right"
-              placeholder="开始时间"
+              placeholder="开始用车时间"
               :default-time="'12:00:00'"
             />
           </div>
@@ -113,11 +126,11 @@
         <el-form-item label="结束" class="input-label input-label-right">
           <div class="block">
             <el-date-picker
-              v-model="inputTime"
+              v-model="inputFinishTime"
               size="small"
               type="datetime"
               align="right"
-              placeholder="结束时间"
+              placeholder="结束用车时间"
               :default-time="'18:00:00'"
             />
           </div>
@@ -165,11 +178,13 @@ export default {
       options: [],
       chooseCity: '',
       map: null,
-      icons: {},
       markers: [],
       currentCity: '',
-      inputTime: ''
-      // chooseCityIndex: 0
+      inputStartTime: '',
+      inputFinishTime: '',
+      carPrivate: '1',
+      chooseCar: '',
+      chooseCarId: ''
     }
   },
   computed: {
@@ -430,7 +445,7 @@ export default {
   left: 10px;
   top: 10px;
   height: auto;
-  width: 330px;
+  width: 320px;
   border-radius: 5px;
   background-color: rgb(48, 65, 86);
 }
@@ -438,6 +453,7 @@ export default {
 .input-container {
   margin: 25px;
   margin-bottom: 0;
+  margin-right: 15px;
   position: relative;
 }
 .search-form-left {
@@ -471,7 +487,9 @@ html,
   color: white;
   font-weight: normal;
 }
-
+.input-car-label{
+  margin-left: 25px;
+}
 .el-form--inline >>> .el-form-item{
   margin-bottom: 7px;
   margin-right: 0;
@@ -496,5 +514,12 @@ html,
 .input-reason{
   margin-bottom: 5px;
   margin-top:5px;
+}
+.input-label>>>.el-radio__label {
+  color: white
+}
+
+.input-car>>>.el-input--small{
+  width:190px;
 }
 </style>
