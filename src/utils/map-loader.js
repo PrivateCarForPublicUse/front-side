@@ -2,6 +2,7 @@ export default function MapLoader() {
   return new Promise((resolve, reject) => {
     if (window.AMap) {
       resolve(window.AMap)
+      resolve(initAMapUI())
     } else {
       var script = document.createElement('script')
       script.type = 'text/javascript'
@@ -18,6 +19,7 @@ export default function MapLoader() {
     }
     window.initAMap = () => {
       resolve(window.AMap)
+      resolve(initAMapUI())
     }
   })
 }
