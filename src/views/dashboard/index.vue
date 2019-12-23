@@ -410,6 +410,7 @@ export default {
             that.chooseCity = that.currentCity
           })
         })
+        initAMapUI()
       }, e => {
         console.log('地图加载失败', e)
       })
