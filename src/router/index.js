@@ -5,6 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import constant from "vue-amap/src/lib/utils/constant";
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -118,17 +119,6 @@ export const constantRoutes = [
     }]
   },
   {
-    path: '/account',
-    component: Layout,
-    redirect: '/account',
-    children: [{
-      path: 'index',
-      name: 'account',
-      component: () => import('@/views/account/index'),
-      meta: { title: '账号管理', icon: 'dashboard' }
-    }]
-  },
-  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',
@@ -230,6 +220,72 @@ export const constantRoutes = [
         meta: { title: 'External Link', icon: 'link' }
       }
     ]
+  }
+]
+
+// 异步挂载的路由
+// 动态需要根据权限加载的路由表
+export const asyncRoutes = [
+  {
+    path: '/permission',
+    component: Layout,
+    meta: { title: '权限测试', icon: 'dashboard' },
+    name: '权限测试',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/permissiontest/index'),
+        name: '管理员可见',
+        meta: { roles: ['admin'], title: '管理员可见', icon: 'dashboard' } // 页面需要的权限
+      },
+      {
+        path: 'external-link',
+        name: '所有人可见',
+        component: Layout,
+        children: [
+          {
+            path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
+            meta: { title: '所有人可见', icon: 'link' }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    path: '/master/user',
+    name: '用户管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/user/index'),
+        meta: { title: '用户管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+      }
+    ]
+  },
+  {
+    path: '/master/car',
+    name: '车辆管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/car/index'),
+        meta: { title: '车辆管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+      }
+    ]
+  },
+  {
+    path: '/master/route',
+    name: '路程管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/route/index'),
+        meta: { title: '路程管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+      }
+    ]
   },
 
   // 404 page must be placed at the end !!!
@@ -247,6 +303,7 @@ const router = createRouter()
 // Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
 export function resetRouter() {
   const newRouter = createRouter()
+  router.options.routes = constantRoutes
   router.matcher = newRouter.matcher // reset router
 }
 

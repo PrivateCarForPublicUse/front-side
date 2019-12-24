@@ -55,15 +55,15 @@
           {{ scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column prop="license" />
-      <el-table-column prop="band" />
-      <el-table-column prop="type" />
-      <el-table-column prop="isPublic" />
-      <el-table-column prop="isUse" />
-      <el-table-column prop="starTime" />
-      <el-table-column prop="endTime" />
-      <el-table-column prop="displacement" />
-      <el-table-column prop="starOfCar" />
+      <el-table-column prop="license" label="车牌号" />
+      <el-table-column prop="band" label="品牌" />
+      <el-table-column prop="type" label="车型" />
+      <el-table-column prop="isPublic" label="是否为公车" />
+      <el-table-column prop="isUse" label="是否在使用中" />
+      <el-table-column prop="starTime" label="预约-开始时间" />
+      <el-table-column prop="endTime" label="预约-结束时间" />
+      <el-table-column prop="displacement" label="耗油量" />
+      <el-table-column prop="starOfCar" label="星级评分" />
     </el-table>
   </div>
 </template>

@@ -23,12 +23,22 @@ export function logout() {
   })
 }
 
-// 获取用户信息
-export function getUserInfo(params) {
+// 获取所有用户信息
+export function getAllUsers(params) {
   return request({
     baseURL: process.env.VUE_APP_BASE_API2,
     url: '/user/',
     method: 'get',
     params
+  })
+}
+
+// 修改用户信息
+export function updateUser(params) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/user',
+    method: 'put',
+    data: params
   })
 }
