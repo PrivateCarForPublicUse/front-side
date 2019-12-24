@@ -1,3 +1,4 @@
+/* eslint-disable vue/no-parsing-error */
 <template>
   <div class="dashboard-container">
     <div class="amap-wrapper">
@@ -5,14 +6,14 @@
       <div id="container" />
     </div>
     <div class="input-box">
-      <el-form :inline="true">
+      <el-form ref="applyForm" :model="applyForm" :inline="true" :rules="rules">
         <div class="input-container">
           <div class="search-form-left">
             <svg-icon icon-class="sorting" @click="changeStartAndEnd" />
           </div>
-          <el-form-item label="起点" class="input-label">
+          <el-form-item label="起点" class="input-label" prop="start">
             <el-autocomplete
-              v-model="start"
+              v-model="applyForm.start"
               popper-class="my-autocomplete"
               class="input-text"
               size="small"
@@ -32,37 +33,40 @@
               </template>
             </el-autocomplete>
           </el-form-item>
-          <el-form-item
-            v-for="route in routeFormSubRoutes.length"
-            :key="routeFormSubRoutes[route-1].key"
-            :label="'途经'"
-            class="input-label"
-          >
-            <el-autocomplete
-              v-model="routeFormSubRoutes[route-1].value"
-              popper-class="my-autocomplete"
-              size="small"
-              class="input-text"
-              placeholder="途径节点"
-              :fetch-suggestions="querySearch"
-              :trigger-on-focus="false"
-              @focus="changeInputIndex(route)"
-              @select="handleSelect"
+          <div class="input-label-right-little">
+            <el-form-item
+              v-for="route in routeFormSubRoutes.length"
+              :key="routeFormSubRoutes[route-1].key"
+              :label="'途经'"
+              class="input-label"
             >
-              <i
-                slot="suffix"
-                class="el-icon-location-outline"
-              />
-              <template slot-scope="{ item }">
-                <div class="name">{{ item.value }}</div>
-                <div class="addr">{{ item.district }}</div>
-              </template>
-            </el-autocomplete>
-            <svg-icon icon-class="delete" @click="deleteSubRoute(routeFormSubRoutes[route-1])" />
-          </el-form-item>
+              <el-autocomplete
+                v-model="routeFormSubRoutes[route-1].value"
+                popper-class="my-autocomplete"
+                size="small"
+                class="input-text"
+                placeholder="途径节点"
+                :fetch-suggestions="querySearch"
+                :trigger-on-focus="false"
+                @focus="changeInputIndex(route)"
+                @select="handleSelect"
+              >
+                <i
+                  slot="suffix"
+                  class="el-icon-location-outline"
+                />
+                <template slot-scope="{ item }">
+                  <div class="name">{{ item.value }}</div>
+                  <div class="addr">{{ item.district }}</div>
+                </template>
+              </el-autocomplete>
+              <svg-icon icon-class="delete" @click="deleteSubRoute(routeFormSubRoutes[route-1])" />
+            </el-form-item>
+          </div>
+
           <el-form-item label="终点" prop="end" class="input-label">
             <el-autocomplete
-              v-model="end"
+              v-model="applyForm.end"
               popper-class="my-autocomplete"
               size="small"
               class="input-text"
@@ -84,12 +88,12 @@
             <svg-icon icon-class="round_add_fill" @click="addSubRoute" />
           </el-form-item>
         </div>
-        <el-form-item label="原因" class="input-label input-label-right">
+        <el-form-item label="原因" class="input-label input-label-right" prop="inputReason">
           <div
             class="input-text"
           >
             <el-input
-              v-model="inputReason"
+              v-model="applyForm.inputReason"
               class="input-reason"
               :autosize="{ minRows: 2, maxRows: 3}"
               type="textarea"
@@ -98,23 +102,10 @@
             />
           </div>
         </el-form-item>
-        <el-form-item label="选择车辆类型" class="input-label input-car-label">
-          <el-radio v-model="carPrivate" class="input-label" label="1">我的</el-radio>
-          <el-radio v-model="carPrivate" label="2">共有</el-radio>
-
-        </el-form-item>
-        <el-form-item label="车辆" class="input-label input-label-right">
-          <el-input
-            v-model="chooseCar"
-            class="input-text"
-            size="small"
-            placeholder="选择出行车辆"
-          />
-        </el-form-item>
-        <el-form-item label="开始" class="input-label input-label-right">
+        <el-form-item label="开始" class="input-label input-label-right" prop="inputStartTime">
           <div class="block">
             <el-date-picker
-              v-model="inputStartTime"
+              v-model="applyForm.inputStartTime"
               size="small"
               type="datetime"
               align="right"
@@ -123,10 +114,10 @@
             />
           </div>
         </el-form-item>
-        <el-form-item label="结束" class="input-label input-label-right">
+        <el-form-item label="结束" class="input-label input-label-right" prop="inputFinishTime">
           <div class="block">
             <el-date-picker
-              v-model="inputFinishTime"
+              v-model="applyForm.inputFinishTime"
               size="small"
               type="datetime"
               align="right"
@@ -135,10 +126,24 @@
             />
           </div>
         </el-form-item>
+        <el-form-item label="选择车辆类型" class="input-label input-label-block">
+          <el-radio v-model="applyForm.carPrivate" label="1">我的</el-radio>
+          <el-radio v-model="applyForm.carPrivate" label="2">共有</el-radio>
+        </el-form-item>
+        <div class="warning">*</div>
+        <el-form-item label="车辆" class="input-label input-label-block">
+          <el-input
+            v-model="applyForm.chooseCar"
+            class="input-text"
+            size="small"
+            placeholder="选择出行车辆"
+            @focus="handleShowDialog"
+          />
+        </el-form-item>
         <div
           class="input-submit"
         >
-          <el-button size="small" class="submit-button">提交申请</el-button>
+          <el-button size="small" class="submit-button" @click="submitForm('applyForm')">提交申请</el-button>
         </div>
       </el-form>
     </div>
@@ -157,6 +162,55 @@
         />
       </el-select>
     </div>
+    <div>
+      <el-dialog class="dialog-small" title="选择车辆" :visible.sync="dialogTableVisible" center>
+        <el-table
+          stripe
+          :data="publicCarData"
+        >
+          <el-table-column property="band" label="车牌" width="100" align="center" />
+          <el-table-column property="type" label="车型" width="100" align="center" />
+          <el-table-column label="选择" align="center" width="100">
+            <template slot-scope="scope">
+              <el-button
+                size="small"
+                type="primary"
+                align="center"
+                @click="handleChooseCar(scope.row.id, scope.row.band,scope.row.type)"
+              >选择</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+      </el-dialog>
+    </div>
+    <div>
+      <el-dialog title="选择车辆" :visible.sync="dialogPublicTableVisible" center>
+        <el-table
+          stripe
+          :data="myCarData"
+        >
+          <el-table-column property="band" label="车牌" width="100" align="center" />
+          <el-table-column property="user" label="车主" width="100" align="center" />
+          <el-table-column property="StarOfCar" label="星级" width="100" align="center" />
+          <el-table-column label="用车时间" align="center" width="200">
+            <template slot-scope="scope">
+              {{ scope.row.startTime }}-{{ scope.row.endTime }}
+            </template>
+          </el-table-column>
+          <el-table-column label="选择" align="center" width="100">
+            <template slot-scope="scope">
+              <el-button
+                size="small"
+                type="primary"
+                align="center"
+                @click="handleChooseCar(scope.row.id,scope.row.band,scope.row.type)"
+              >选择</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-dialog>
+    </div>
   </div>
 </template>
 
@@ -168,10 +222,23 @@ export default {
   name: 'Dashboard',
   data() {
     return {
+      applyForm: {
+        start: '',
+        end: '',
+        inputReason: '',
+        inputStartTime: '',
+        inputFinishTime: '',
+        carPrivate: '1',
+        chooseCar: ''
+      },
+      rules: {
+        start: [{ required: true, message: '请输入出发地', trigger: 'blur' }],
+        end: [{ required: true, message: '请输入目的地', trigger: 'blur' }],
+        inputReason: [{ required: true, message: '请输入原因', trigger: 'blur' }],
+        inputStartTime: [{ required: true, message: '请输入出发时间', trigger: 'blur' }],
+        inputFinishTime: [{ required: true, message: '请输入结束时间', trigger: 'blur' }]
+      },
       adviceList: [],
-      start: '',
-      end: '',
-      inputReason: '',
       routeFormSubRoutes: [],
       currentInputIndex: -1,
       citys: [],
@@ -180,11 +247,66 @@ export default {
       map: null,
       markers: [],
       currentCity: '',
-      inputStartTime: '',
-      inputFinishTime: '',
-      carPrivate: '1',
-      chooseCar: '',
-      chooseCarId: ''
+      chooseCarId: '',
+      dialogTableVisible: false,
+      dialogPublicTableVisible: false,
+      myCarData: [{
+        id: 1,
+        isUse: 0,
+        band: '123453',
+        user: 'kinkin',
+        type: '宝马',
+        StarOfCar: 2.5,
+        startTime: '00:09:00',
+        endTime: '00:18:00'
+      },
+      {
+        id: 2,
+        isUse: 1,
+        band: '123452',
+        user: 'kinkin',
+        type: '宝马',
+        StarOfCar: 2.5,
+        startTime: '2016-05-02',
+        endTime: '2016-05-02'
+      }, {
+        id: 82,
+        isUse: 0,
+        band: '123451',
+        user: 'kinkin',
+        type: '宝马',
+        StarOfCar: 2.5,
+        startTime: '2016-05-02',
+        endTime: '2016-05-02'
+      }],
+      publicCarData: [{
+        id: 2,
+        isUse: 0,
+        band: '123452',
+        user: 'kinkin',
+        type: '宝马',
+        StarOfCar: 2.5,
+        startTime: '2016-05-02',
+        endTime: '2016-05-02'
+      }, {
+        id: 5,
+        isUse: 0,
+        user: 'kinkin',
+        band: '123453',
+        type: '宝马',
+        StarOfCar: 2.5,
+        startTime: '2016-05-02',
+        endTime: '2016-05-02'
+      }, {
+        id: 7,
+        isUse: 0,
+        user: 'kinkin',
+        band: '123454',
+        type: '宝马',
+        StarOfCar: 2.5,
+        startTime: '2016-05-02',
+        endTime: '2016-05-02'
+      }]
     }
   },
   computed: {
@@ -196,8 +318,8 @@ export default {
       for (index in this.routeFormSubRoutes) {
         temp.push(this.routeFormSubRoutes[index].value)
       }
-      temp.unshift(this.start)
-      temp.push(this.end)
+      temp.unshift(this.applyForm.start)
+      temp.push(this.applyForm.end)
       return temp
     }
   },
@@ -211,6 +333,16 @@ export default {
     }
   },
   methods: {
+    submitForm(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          alert('submit!')
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
     querySearch(queryString, cb) {
       AMap.plugin('AMap.Autocomplete', (currentCity = this.chooseCity, keyword = queryString) => {
         // 实例化Autocomplete
@@ -246,6 +378,19 @@ export default {
           }
         })
       })
+    },
+    handleShowDialog() {
+      if (this.applyForm.carPrivate === '1') {
+        this.dialogTableVisible = true
+      } else {
+        this.dialogPublicTableVisible = true
+      }
+    },
+    handleChooseCar(val, band, type) {
+      this.chooseCarId = val
+      this.dialogPublicTableVisible = false
+      this.dialogTableVisible = false
+      this.applyForm.chooseCar = band + '-' + type
     },
     handleSelect(item) {
       let that = this
@@ -299,6 +444,7 @@ export default {
               iconStyle: 'blue',
               map: that.map
             })
+            startmarker.setPosition(position)
             that.map.add(startmarker)
             that.markers[index] = startmarker
           } else if (index === -1) {
@@ -314,6 +460,7 @@ export default {
               iconStyle: 'red',
               map: that.map
             })
+            endmarker.setPosition(position)
             that.map.add(endmarker)
             that.markers[index] = endmarker
           } else {
@@ -329,6 +476,7 @@ export default {
               iconStyle: 'green',
               map: that.map
             })
+            viamarker.setPosition(position)
             that.map.add(viamarker)
             that.markers[index] = viamarker
           }
@@ -351,9 +499,9 @@ export default {
       this.removeMarker(index + 1)
     },
     changeStartAndEnd() {
-      let temp = this.start
-      this.start = this.end
-      this.end = temp
+      let temp = this.applyForm.start
+      this.applyForm.start = this.applyForm.end
+      this.applyForm.end = temp
       try {
         let startPosition = this.markers['0'].getPosition()
         try {
@@ -445,7 +593,7 @@ export default {
   left: 10px;
   top: 10px;
   height: auto;
-  width: 320px;
+  width: 335px;
   border-radius: 5px;
   background-color: rgb(48, 65, 86);
 }
@@ -487,15 +635,15 @@ html,
   color: white;
   font-weight: normal;
 }
-.input-car-label{
-  margin-left: 25px;
-}
 .el-form--inline >>> .el-form-item{
   margin-bottom: 7px;
   margin-right: 0;
 }
 .input-label-right{
   margin-left: 25px;
+}
+.input-label-right-little{
+  margin-left: 9px;
 }
 .my-autocomplete .addr >>>{
   position: relative;
@@ -521,5 +669,25 @@ html,
 
 .input-car>>>.el-input--small{
   width:190px;
+}
+.dialog-small{
+  margin: 0 auto;
+  padding: 0 290px;
+}
+.input-label>>>.el-form-item__error{
+    font-size: 10px;
+    line-height: 0.5;
+    padding-top: 0px;
+}
+.input-label-block{
+  margin-left:35px;
+}
+.warning{
+  position: absolute;
+  bottom: 75px;
+  width: 10px;
+  margin: 0;
+  left: 25px;
+  color: #F56C6C;
 }
 </style>

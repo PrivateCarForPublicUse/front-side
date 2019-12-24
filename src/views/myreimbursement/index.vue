@@ -36,7 +36,6 @@
       fit
       stripe
       highlight-current-row
-      @selection-change="handleSelectionChange"
     >
       <el-table-column type="expand">
         <template slot-scope="scope">
@@ -261,7 +260,6 @@ export default {
           reimburseType: 0
         }
       ],
-      multipleSelection: [],
       chooseType: '',
       searchReason: '',
       searchItems: ['reason', 'routeLength', 'cost', 'applyTime']
@@ -319,9 +317,6 @@ export default {
     })
   },
   methods: {
-    handleSelectionChange(val) {
-      this.multipleSelection = val
-    },
     fillingRoutes(routes) {
       var filledRoutes = []
       for (var i = 0; i < routes.length; i++) {
