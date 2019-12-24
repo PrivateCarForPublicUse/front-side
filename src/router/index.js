@@ -263,6 +263,30 @@ export const asyncRoutes = [
       }
     ]
   },
+  {
+    path: '/master/car',
+    name: '车辆管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/car/index'),
+        meta: { title: '车辆管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+      }
+    ]
+  },
+  {
+    path: '/master/route',
+    name: '路程管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/route/index'),
+        meta: { title: '路程管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+      }
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }

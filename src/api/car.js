@@ -10,3 +10,20 @@ export function getMyCarInfo(params) {
     params
   })
 }
+
+export function getAllCars() {
+  return request({
+    url: '/car/',
+    method: 'get',
+    baseURL: process.env.VUE_APP_BASE_API2
+  })
+}
+
+export function updateCar(data) {
+  return request({
+    url: '/car/update',
+    method: 'put',
+    baseURL: process.env.VUE_APP_BASE_API2,
+    data
+  })
+}

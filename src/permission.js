@@ -43,9 +43,7 @@ router.beforeEach(async(to, from, next) => {
           router.addRoutes(accessRoutes)
           let routes
           routes = router.options.routes.concat(accessRoutes)
-          console.log(routes)
           router.options.routes = routes
-          console.log(router.options.routes)
 
           // hack method to ensure that addRoutes is complete
           // set the replace: true, so the navigation will not leave a history record
