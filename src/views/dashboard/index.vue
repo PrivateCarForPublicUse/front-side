@@ -33,7 +33,7 @@
               </template>
             </el-autocomplete>
           </el-form-item>
-          <div class="input-label-right-little">
+          <div class="input-label">
             <el-form-item
               v-for="route in routeFormSubRoutes.length"
               :key="routeFormSubRoutes[route-1].key"
@@ -126,12 +126,11 @@
             />
           </div>
         </el-form-item>
-        <el-form-item label="选择车辆类型" class="input-label input-label-block">
+        <el-form-item label="选择车辆类型" class="input-label input-label-right">
           <el-radio v-model="applyForm.carPrivate" label="1">我的</el-radio>
           <el-radio v-model="applyForm.carPrivate" label="2">共有</el-radio>
         </el-form-item>
-        <div class="warning">*</div>
-        <el-form-item label="车辆" class="input-label input-label-block">
+        <el-form-item label="车辆" class="input-label input-label-right">
           <el-input
             v-model="applyForm.chooseCar"
             class="input-text"
@@ -166,7 +165,7 @@
       <el-dialog class="dialog-small" title="选择车辆" :visible.sync="dialogTableVisible" center>
         <el-table
           stripe
-          :data="publicCarData"
+          :data="carData"
         >
           <el-table-column property="band" label="车牌" width="100" align="center" />
           <el-table-column property="type" label="车型" width="100" align="center" />
@@ -188,7 +187,7 @@
       <el-dialog title="选择车辆" :visible.sync="dialogPublicTableVisible" center>
         <el-table
           stripe
-          :data="myCarData"
+          :data="carData"
         >
           <el-table-column property="band" label="车牌" width="100" align="center" />
           <el-table-column property="user" label="车主" width="100" align="center" />
@@ -218,25 +217,76 @@
 import { mapGetters } from 'vuex'
 import MapLoader from '@/utils/map-loader.js'
 import cityslist from '@/utils/city.js'
+import { applyCar, getCarByTime } from '@/api/applyCar.js'
 export default {
   name: 'Dashboard',
   data() {
+    var validateStart = (rule, value, callback) => {
+      if (value === '' || value === null) {
+        callback(new Error('出发地不能为空'))
+      } else if (this.checkHasMarker(0)) {
+        callback(new Error('请确定具体位置'))
+      } else {
+        callback()
+      }
+    }
+    var validateEnd = (rule, value, callback) => {
+      if (value === '' || value === null) {
+        callback(new Error('目的地不能为空'))
+      } else if (this.checkHasMarker(-1)) {
+        callback(new Error('请确定具体位置'))
+      } else {
+        callback()
+      }
+    }
+    var validReason = (rule, value, callback) => {
+      if (value === '' || value === null) {
+        callback(new Error('原因不能为空'))
+      } else if (value.length > 72) {
+        callback(new Error('理由不能超过72个字符'))
+      } else {
+        callback()
+      }
+    }
+    var validateTimeStart = (rule, value, callback) => {
+      if (value === null) {
+        callback(new Error('时间不能为空'))
+      } else if (value.getTime() + 1000 < Date.now()) {
+        callback(new Error('不能选择已经过去的时间点'))
+      } else {
+        if (this.applyForm.inputFinishTime !== '') {
+          this.$refs.applyForm.validateField('inputFinishTime')
+        }
+        callback()
+      }
+    }
+    var validateTimeEnd = (rule, value, callback) => {
+      if (value === null) {
+        callback(new Error('时间不能为空'))
+      } else if (this.applyForm.inputStartTime === null) {
+        callback(new Error('需先填写开始时间'))
+      } else if (value.getTime() < this.applyForm.inputStartTime.getTime()) {
+        callback(new Error('结束时间不能晚于开始时间'))
+      } else {
+        callback()
+      }
+    }
     return {
       applyForm: {
         start: '',
         end: '',
         inputReason: '',
-        inputStartTime: '',
-        inputFinishTime: '',
+        inputStartTime: null,
+        inputFinishTime: null,
         carPrivate: '1',
         chooseCar: ''
       },
       rules: {
-        start: [{ required: true, message: '请输入出发地', trigger: 'blur' }],
-        end: [{ required: true, message: '请输入目的地', trigger: 'blur' }],
-        inputReason: [{ required: true, message: '请输入原因', trigger: 'blur' }],
-        inputStartTime: [{ required: true, message: '请输入出发时间', trigger: 'blur' }],
-        inputFinishTime: [{ required: true, message: '请输入结束时间', trigger: 'blur' }]
+        start: [{ validator: validateStart, trigger: 'blur' }],
+        end: [{ validator: validateEnd, trigger: 'blur' }],
+        inputReason: [{ validator: validReason, trigger: 'blur' }],
+        inputStartTime: [{ validator: validateTimeStart, trigger: 'blur' }],
+        inputFinishTime: [{ validator: validateTimeEnd, trigger: 'blur' }]
       },
       adviceList: [],
       routeFormSubRoutes: [],
@@ -250,7 +300,9 @@ export default {
       chooseCarId: '',
       dialogTableVisible: false,
       dialogPublicTableVisible: false,
-      myCarData: [{
+      carData: null,
+      // 测试数据
+      testCarData: [{
         id: 1,
         isUse: 0,
         band: '123453',
@@ -259,53 +311,6 @@ export default {
         StarOfCar: 2.5,
         startTime: '00:09:00',
         endTime: '00:18:00'
-      },
-      {
-        id: 2,
-        isUse: 1,
-        band: '123452',
-        user: 'kinkin',
-        type: '宝马',
-        StarOfCar: 2.5,
-        startTime: '2016-05-02',
-        endTime: '2016-05-02'
-      }, {
-        id: 82,
-        isUse: 0,
-        band: '123451',
-        user: 'kinkin',
-        type: '宝马',
-        StarOfCar: 2.5,
-        startTime: '2016-05-02',
-        endTime: '2016-05-02'
-      }],
-      publicCarData: [{
-        id: 2,
-        isUse: 0,
-        band: '123452',
-        user: 'kinkin',
-        type: '宝马',
-        StarOfCar: 2.5,
-        startTime: '2016-05-02',
-        endTime: '2016-05-02'
-      }, {
-        id: 5,
-        isUse: 0,
-        user: 'kinkin',
-        band: '123453',
-        type: '宝马',
-        StarOfCar: 2.5,
-        startTime: '2016-05-02',
-        endTime: '2016-05-02'
-      }, {
-        id: 7,
-        isUse: 0,
-        user: 'kinkin',
-        band: '123454',
-        type: '宝马',
-        StarOfCar: 2.5,
-        startTime: '2016-05-02',
-        endTime: '2016-05-02'
       }]
     }
   },
@@ -380,11 +385,16 @@ export default {
       })
     },
     handleShowDialog() {
-      if (this.applyForm.carPrivate === '1') {
-        this.dialogTableVisible = true
-      } else {
-        this.dialogPublicTableVisible = true
-      }
+      let params = { 'startTime': this.startTime, 'endTime': this.endTime, 'isMine': this.carPrivate }
+      getCarByTime(params).then(response => {
+        this.carData = response.data
+        // this.listLoading = false
+        if (this.applyForm.carPrivate === '1') {
+          this.dialogTableVisible = true
+        } else {
+          this.dialogPublicTableVisible = true
+        }
+      })
     },
     handleChooseCar(val, band, type) {
       this.chooseCarId = val
@@ -395,27 +405,34 @@ export default {
     handleSelect(item) {
       let that = this
       if (item.location instanceof AMap.LngLat) {
-        if (item.district.match('自治区') !== null) {
-          try {
-            this.chooseCity = item.district.split('自治区')[1].split('市')[0]
-          } catch (e) {
-            console.log('没有具体信息')// 优化可以做定位
-          }
-        } else if (item.district.match('台湾') !== null) {
-          this.chooseCity = '台湾'
-        } else if (item.district.match('特别行政区') !== null) {
-          this.chooseCity = item.district.split('特别行政区')[0]
+        let district = that.getLocationByDistrict(item.district)
+        if (district !== -1) {
+          this.chooseCity = district
         } else {
-          try {
-            console.log(item.district)
-            this.chooseCity = item.district.split('省')[1].split('市')[0]
-          } catch (e) {
-            console.log('没有具体信息')// 优化可以做定位
-          }
+          console.log(没有具体信息)
         }
         that.map.setZoom(13)
         that.map.setCenter(item.location)
         that.addMarker(this.currentInputIndex, item.location)
+      }
+    },
+    getLocationByDistrict(district) {
+      if (district.match('自治区') !== null) {
+        try {
+          this.chooseCity = district.split('自治区')[1].split('市')[0]
+        } catch (e) {
+          return -1
+        }
+      } else if (district.match('台湾') !== null) {
+        return '台湾'
+      } else if (district.match('特别行政区') !== null) {
+        return district.split('特别行政区')[0]
+      } else {
+        try {
+          return district.split('省')[1].split('市')[0]
+        } catch (e) {
+          return -1
+        }
       }
     },
     addSubRoute() {
@@ -491,6 +508,15 @@ export default {
       // eslint-disable-next-line no-empty
       } catch (e) {}
     },
+    checkHasMarker(index) {
+      let that = this
+      try {
+        that.markers[index]
+        return true
+      } catch (e) {
+        return false
+      }
+    },
     deleteSubRoute(item) {
       var index = this.routeFormSubRoutes.indexOf(item)
       if (index !== -1) {
@@ -550,7 +576,9 @@ export default {
           citySearch.getLocalCity((status, result) => {
             if (status === 'complete' && result.info === 'OK') {
               // 查询成功，result即为当前所在城市信息
-              that.chooseCity = result.city.slice(0, -1)
+              if (result.city.match('市') !== null || result.city.match('省') !== null) { that.chooseCity = result.city.slice(0, -1) } else if (result.city.match('特别行政区') !== null) { that.chooseCity = result.city.slice(0, -5) } else {
+                that.chooseCity = result.city
+              }
               that.currentCity = that.chooseCity
             }
           })
@@ -593,7 +621,7 @@ export default {
   left: 10px;
   top: 10px;
   height: auto;
-  width: 335px;
+  width: 325px;
   border-radius: 5px;
   background-color: rgb(48, 65, 86);
 }
@@ -642,9 +670,6 @@ html,
 .input-label-right{
   margin-left: 25px;
 }
-.input-label-right-little{
-  margin-left: 9px;
-}
 .my-autocomplete .addr >>>{
   position: relative;
   top:-8px;
@@ -678,16 +703,5 @@ html,
     font-size: 10px;
     line-height: 0.5;
     padding-top: 0px;
-}
-.input-label-block{
-  margin-left:35px;
-}
-.warning{
-  position: absolute;
-  bottom: 75px;
-  width: 10px;
-  margin: 0;
-  left: 25px;
-  color: #F56C6C;
 }
 </style>
