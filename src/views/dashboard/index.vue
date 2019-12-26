@@ -130,7 +130,7 @@
           <el-radio v-model="applyForm.carPrivate" label="1">我的</el-radio>
           <el-radio v-model="applyForm.carPrivate" label="0">共有</el-radio>
         </el-form-item>
-        <el-form-item label="车辆" class="input-label input-label-right">
+        <el-form-item label="车辆" class="input-label input-label-right" prop="chooseCar">
           <el-input
             v-model="applyForm.chooseCar"
             class="input-text"
@@ -219,6 +219,7 @@ import MapLoader from '@/utils/map-loader.js'
 import cityslist from '@/utils/city.js'
 import { applyCar, getCarByTime } from '@/api/applyCar.js'
 import '@/utils/data-format.js'
+import { Message } from 'element-ui'
 export default {
   name: 'Dashboard',
   data() {
@@ -358,10 +359,40 @@ export default {
     }
   },
   methods: {
+    getMarkerLocations() {
+      let index; let locations = []
+      for (index in this.markers) {
+        locations.push({
+          latitude: this.markers[index].getPosition().getLat(),
+          longitude: this.markers[index].getPosition().getLng()
+        })
+      }
+      return locations
+    },
+    sendApplyCar() {
+      let params = {
+        carId: this.chooseCarId,
+        startTime: this.startTime,
+        endTime: this.applyForm.endTime,
+        names: this.routeFormRoutes,
+        reason: this.applyForm.reason,
+        lats: this.getMarkerLocations
+      }
+      applyCar(params).then(response => {
+        if (response.data) {
+          Message({
+            message: res.message || 'Error',
+            type: 'success',
+            duration: 5 * 1000
+          })
+        }
+      })
+    },
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           alert('submit!')
+          this.sendApplyCar()
         } else {
           console.log('error submit!!')
           return false
