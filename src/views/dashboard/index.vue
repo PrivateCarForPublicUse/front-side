@@ -222,23 +222,30 @@ import '@/utils/data-format.js'
 export default {
   name: 'Dashboard',
   data() {
+    function sleep1(ms, callback) {
+      setTimeout(callback, ms)
+    }
     var validateStart = (rule, value, callback) => {
-      if (value === '' || value === null) {
-        callback(new Error('出发地不能为空'))
-      } else if (!this.markers[0]) {
-        callback(new Error('请确定具体位置'))
-      } else {
-        callback()
-      }
+      sleep1(1000, () => {
+        if (value === '' || value === null) {
+          callback(new Error('出发地不能为空'))
+        } else if (!this.markers[0]) {
+          callback(new Error('请确定具体位置'))
+        } else {
+          callback()
+        }
+      })
     }
     var validateEnd = (rule, value, callback) => {
-      if (value === '' || value === null) {
-        callback(new Error('目的地不能为空'))
-      } else if (!this.markers[-1]) {
-        callback(new Error('请确定具体位置'))
-      } else {
-        callback()
-      }
+      sleep1(1000, () => {
+        if (value === '' || value === null) {
+          callback(new Error('目的地不能为空'))
+        } else if (!this.markers[-1]) {
+          callback(new Error('请确定具体位置'))
+        } else {
+          callback()
+        }
+      })
     }
     var validReason = (rule, value, callback) => {
       if (value === '' || value === null) {
@@ -255,7 +262,7 @@ export default {
       } else if (value.getTime() + 1000 < Date.now()) {
         callback(new Error('不能选择已经过去的时间点'))
       } else {
-        if (this.applyForm.inputFinishTime !== '') {
+        if (this.applyForm.inputFinishTime) {
           this.$refs.applyForm.validateField('inputFinishTime')
         }
         callback()
@@ -272,6 +279,17 @@ export default {
         callback()
       }
     }
+    var validateCar = (rule, value, callback) => {
+      sleep1(1000, () => {
+        if (value === null) {
+          callback(new Error('车辆不能为空'))
+        } else {
+          this.$refs.applyForm.validateField('validateTimeStart')
+          this.$refs.applyForm.validateField('inputFinishTime')
+          callback()
+        }
+      })
+    }
     return {
       applyForm: {
         start: '',
@@ -280,14 +298,15 @@ export default {
         inputStartTime: null,
         inputFinishTime: null,
         carPrivate: '1',
-        chooseCar: ''
+        chooseCar: null
       },
       rules: {
         start: [{ validator: validateStart, trigger: 'blur' }],
         end: [{ validator: validateEnd, trigger: 'blur' }],
         inputReason: [{ validator: validReason, trigger: 'blur' }],
         inputStartTime: [{ validator: validateTimeStart, trigger: 'blur' }],
-        inputFinishTime: [{ validator: validateTimeEnd, trigger: 'blur' }]
+        inputFinishTime: [{ validator: validateTimeEnd, trigger: 'blur' }],
+        chooseCar: [{ validator: validateCar, trigger: 'blur' }]
       },
       adviceList: [],
       routeFormSubRoutes: [],
@@ -349,6 +368,20 @@ export default {
         }
       })
     },
+    checkTimeAviable() {
+      let vaild = true
+      this.$refs.applyForm.validateField('inputStartTime', (errMsg) => {
+        if (errMsg) {
+          vaild = false
+        }
+      })
+      this.$refs.applyForm.validateField('inputFinishTime', (errMsg) => {
+        if (errMsg) {
+          vaild = false
+        }
+      })
+      return vaild
+    },
     querySearch(queryString, cb) {
       AMap.plugin('AMap.Autocomplete', (currentCity = this.chooseCity, keyword = queryString) => {
         // 实例化Autocomplete
@@ -386,7 +419,7 @@ export default {
       })
     },
     handleShowDialog() {
-      if (this.applyForm.inputStartTime && this.applyForm.inputFinishTime) {
+      if (this.checkTimeAviable()) {
         let params = {
           'startTime': this.applyForm.inputStartTime.Format('yyyy-MM-dd hh:mm'),
           'endTime': this.applyForm.inputFinishTime.Format('yyyy-MM-dd hh:mm'),
