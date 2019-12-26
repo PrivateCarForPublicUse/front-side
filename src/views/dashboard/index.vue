@@ -128,7 +128,7 @@
         </el-form-item>
         <el-form-item label="选择车辆类型" class="input-label input-label-right">
           <el-radio v-model="applyForm.carPrivate" label="1">我的</el-radio>
-          <el-radio v-model="applyForm.carPrivate" label="2">共有</el-radio>
+          <el-radio v-model="applyForm.carPrivate" label="0">共有</el-radio>
         </el-form-item>
         <el-form-item label="车辆" class="input-label input-label-right">
           <el-input
@@ -218,13 +218,14 @@ import { mapGetters } from 'vuex'
 import MapLoader from '@/utils/map-loader.js'
 import cityslist from '@/utils/city.js'
 import { applyCar, getCarByTime } from '@/api/applyCar.js'
+import '@/utils/data-format.js'
 export default {
   name: 'Dashboard',
   data() {
     var validateStart = (rule, value, callback) => {
       if (value === '' || value === null) {
         callback(new Error('出发地不能为空'))
-      } else if (this.checkHasMarker(0)) {
+      } else if (!this.markers[0]) {
         callback(new Error('请确定具体位置'))
       } else {
         callback()
@@ -233,7 +234,7 @@ export default {
     var validateEnd = (rule, value, callback) => {
       if (value === '' || value === null) {
         callback(new Error('目的地不能为空'))
-      } else if (this.checkHasMarker(-1)) {
+      } else if (!this.markers[-1]) {
         callback(new Error('请确定具体位置'))
       } else {
         callback()
@@ -385,16 +386,22 @@ export default {
       })
     },
     handleShowDialog() {
-      let params = { 'startTime': this.startTime, 'endTime': this.endTime, 'isMine': this.carPrivate }
-      getCarByTime(params).then(response => {
-        this.carData = response.data
-        // this.listLoading = false
-        if (this.applyForm.carPrivate === '1') {
-          this.dialogTableVisible = true
-        } else {
-          this.dialogPublicTableVisible = true
-        }
-      })
+      if (this.applyForm.inputStartTime && this.applyForm.inputFinishTime) {
+        let params = {
+          'startTime': this.applyForm.inputStartTime.Format('yyyy-MM-dd hh:mm'),
+          'endTime': this.applyForm.inputFinishTime.Format('yyyy-MM-dd hh:mm'),
+          'isMine': this.applyForm.carPrivate - '0' }
+        console.log(params)
+        getCarByTime(params).then(response => {
+          this.carData = response.data
+          // this.listLoading = false
+          if (this.applyForm.carPrivate === '1') {
+            this.dialogTableVisible = true
+          } else {
+            this.dialogPublicTableVisible = true
+          }
+        })
+      }
     },
     handleChooseCar(val, band, type) {
       this.chooseCarId = val
@@ -502,19 +509,9 @@ export default {
     },
     removeMarker(index) {
       let that = this
-      try {
+      if (that.markers[index]) {
         that.map.remove(that.markers[index])
         delete that.markers[index]
-      // eslint-disable-next-line no-empty
-      } catch (e) {}
-    },
-    checkHasMarker(index) {
-      let that = this
-      try {
-        that.markers[index]
-        return true
-      } catch (e) {
-        return false
       }
     },
     deleteSubRoute(item) {
