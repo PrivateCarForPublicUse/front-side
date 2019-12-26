@@ -26,6 +26,11 @@ import variables from '@/styles/variables.scss'
 
 export default {
   components: { SidebarItem, Logo },
+  data() {
+    return {
+      timer: null
+    }
+  },
   computed: {
     ...mapGetters([
       'sidebar'
@@ -50,6 +55,17 @@ export default {
     },
     isCollapse() {
       return !this.sidebar.opened
+    }
+  },
+  created() {
+    this.timer = setInterval(this.fun, 1000)
+  },
+  beforeDestroy() {
+    clearInterval(this.timer)
+  },
+  methods: {
+    fun() {
+      console.log('fun...')
     }
   }
 }

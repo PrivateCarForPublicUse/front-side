@@ -1,7 +1,7 @@
 
 const tokens = {
   admin: {
-    token: 'admin-token'
+    token: '6eee6376-e88d-4aa8-840f-bb6dd53031c2'
   },
   editor: {
     token: 'editor-token'
@@ -9,7 +9,7 @@ const tokens = {
 }
 
 const users = {
-  'admin-token': {
+  '6eee6376-e88d-4aa8-840f-bb6dd53031c2': {
     roles: ['admin'],
     introduction: 'I am a super administrator',
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',

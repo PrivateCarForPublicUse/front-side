@@ -5,9 +5,10 @@ import { getToken } from '@/utils/auth'
 import qs from 'qs'
 
 // create an axios instance
+// axios.defaults.withCredentials = true
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API, // url = base url + request url
-  // withCredentials: true, // send cookies when cross-domain requests
+  withCredentials: true, // send cookies when cross-domain requests
   timeout: 5000 // request timeout
 })
 // axios.defaults.headers.post['Content-Type'] =

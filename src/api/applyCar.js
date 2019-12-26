@@ -14,6 +14,9 @@ export function getCarByTime(params) {
     method: 'post',
     baseURL: process.env.VUE_APP_BASE_API2,
     url: '/car/getCarByTime',
-    data: params
+    data: params,
+    headers: {
+      'Cookie': 'token=6eee6376-e88d-4aa8-840f-bb6dd53031c2'
+    }
   })
 }
