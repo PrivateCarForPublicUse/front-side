@@ -42,10 +42,13 @@
         <el-button type="primary" @click.native="deleteSubmit">确定</el-button>
       </div>
     </el-dialog>
-    <el-dialog :visible.sync="editFormVisible" title="编辑" :close-on-click-modal="false">
-      <el-form ref="editForm" :model="editForm" label-width="80px" :rules="editFormRules">
-        <el-form-item label="用户名" prop="userName">
+    <el-dialog :visible.sync="editFormVisible" title="编辑用户" :close-on-click-modal="false">
+      <el-form ref="editForm" :model="editForm" label-width="80px"><!--// :rules="editFormRules">-->
+        <el-form-item label="用户名">
           <el-input v-model="editForm.userName" auto-complete="off" />
+        </el-form-item>
+        <el-form-item label="用户名">
+          {{ editForm.userName }}
         </el-form-item>
         <el-form-item label="工号">
           <el-input v-model="editForm.workNumber" />
@@ -68,7 +71,7 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click.native="editFormVisible = false">取消</el-button>
-        <el-button type="primary" :loading="editLoading" @click.native="editSubmit">提交</el-button>
+        <el-button type="primary" @click.native="editSubmit">提交</el-button>
       </div>
     </el-dialog>
   </div>
@@ -76,13 +79,14 @@
 
 <script>
 import { getAllUsers, updateUser } from '@/api/user'
+import { getIndex } from '@/utils/index'
 
 export default {
   name: 'Index',
   data() {
     return {
       currentPage: 1,
-      pageSize: 2,
+      pageSize: 4,
       listLoading: false,
       list: [],
       editFormVisible: false,
@@ -146,7 +150,9 @@ export default {
             message: '修改成功',
             type: 'success'
           })
-          this.list[this.editFormIndex] = Object.assign({}, this.editForm)
+          const index = getIndex(this.currentPage, this.pageSize, this.editFormIndex)
+          this.list[index] = this.editForm// Object.assign({}, this.editForm)
+          console.log(index + '**' + this.editForm)
           this.editFormVisible = false
         }
       })

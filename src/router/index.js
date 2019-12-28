@@ -5,7 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
-import constant from "vue-amap/src/lib/utils/constant";
+import constant from 'vue-amap/src/lib/utils/constant'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -249,6 +249,24 @@ export const asyncRoutes = [
           }
         ]
       }
+    ]
+  },
+  {
+    path: '/audit',
+    name: '审核管理',
+    component: Layout,
+    meta: { title: '审核管理', icon: 'dashboard' },
+    children: [{
+      path: '/audit/user',
+      name: '用户审核',
+      component: () => import('@/views/master/audit/user-audit/index'),
+      meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1] }
+    },
+    {
+      path: '/audit/car',
+      name: '车辆审核',
+      meta: { title: '车辆审核', icon: 'dashboard', roles: [0, 1] }
+    }
     ]
   },
   {
