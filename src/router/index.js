@@ -236,7 +236,7 @@ export const asyncRoutes = [
         path: 'index',
         component: () => import('@/views/permissiontest/index'),
         name: '管理员可见',
-        meta: { roles: ['admin'], title: '管理员可见', icon: 'dashboard' } // 页面需要的权限
+        meta: { roles: [0, 1], title: '管理员可见', icon: 'dashboard' } // 页面需要的权限
       },
       {
         path: 'external-link',
@@ -259,7 +259,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/master/user/index'),
-        meta: { title: '用户管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+        meta: { title: '用户管理', icon: 'dashboard', roles: [0, 1] }
       }
     ]
   },
@@ -271,7 +271,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/master/car/index'),
-        meta: { title: '车辆管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+        meta: { title: '车辆管理', icon: 'dashboard', roles: [0, 1] }
       }
     ]
   },
@@ -283,7 +283,19 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/master/route/index'),
-        meta: { title: '路程管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+        meta: { title: '路程管理', icon: 'dashboard', roles: [0, 1] }
+      }
+    ]
+  },
+  {
+    path: '/master/master',
+    name: '管理员管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/master/index'),
+        meta: { title: '管理员管理', icon: 'dashboard', roles: [1] }
       }
     ]
   },

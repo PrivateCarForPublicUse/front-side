@@ -10,13 +10,12 @@ const tokens = {
 
 const users = {
   '6eee6376-e88d-4aa8-840f-bb6dd53031c2': {
-    roles: ['admin'],
+    isCompanyMaster: 1,
     introduction: 'I am a super administrator',
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
     name: 'Super Admin'
   },
   'editor-token': {
-    roles: ['editor'],
     introduction: 'I am an editor',
     avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
     name: 'Normal Editor'
