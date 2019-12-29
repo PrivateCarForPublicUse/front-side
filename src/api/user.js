@@ -37,8 +37,18 @@ export function getAllUsers(params) {
 export function updateUser(params) {
   return request({
     baseURL: process.env.VUE_APP_BASE_API2,
-    url: '/user/user',
+    url: '/user/fd/update',
     method: 'put',
     data: params
+  })
+}
+
+// 根据审核状态返回用户
+export function getAuditUsers(params) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/status',
+    method: 'get',
+    params
   })
 }

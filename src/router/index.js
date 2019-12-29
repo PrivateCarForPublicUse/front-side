@@ -5,7 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
-import constant from "vue-amap/src/lib/utils/constant";
+import constant from 'vue-amap/src/lib/utils/constant'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -236,7 +236,7 @@ export const asyncRoutes = [
         path: 'index',
         component: () => import('@/views/permissiontest/index'),
         name: '管理员可见',
-        meta: { roles: ['admin'], title: '管理员可见', icon: 'dashboard' } // 页面需要的权限
+        meta: { roles: [0, 1], title: '管理员可见', icon: 'dashboard' } // 页面需要的权限
       },
       {
         path: 'external-link',
@@ -252,6 +252,24 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/audit',
+    name: '审核管理',
+    component: Layout,
+    meta: { title: '审核管理', icon: 'dashboard' },
+    children: [{
+      path: '/audit/user',
+      name: '用户审核',
+      component: () => import('@/views/master/audit/user-audit/index'),
+      meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1] }
+    },
+    {
+      path: '/audit/car',
+      name: '车辆审核',
+      meta: { title: '车辆审核', icon: 'dashboard', roles: [0, 1] }
+    }
+    ]
+  },
+  {
     path: '/master/user',
     name: '用户管理',
     component: Layout,
@@ -259,7 +277,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/master/user/index'),
-        meta: { title: '用户管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+        meta: { title: '用户管理', icon: 'dashboard', roles: [0, 1] }
       }
     ]
   },
@@ -271,7 +289,7 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/master/car/index'),
-        meta: { title: '车辆管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+        meta: { title: '车辆管理', icon: 'dashboard', roles: [0, 1] }
       }
     ]
   },
@@ -283,7 +301,19 @@ export const asyncRoutes = [
       {
         path: 'index',
         component: () => import('@/views/master/route/index'),
-        meta: { title: '路程管理', icon: 'dashboard', roles: ['admin', 'super-master'] }
+        meta: { title: '路程管理', icon: 'dashboard', roles: [0, 1] }
+      }
+    ]
+  },
+  {
+    path: '/master/master',
+    name: '管理员管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/master/index'),
+        meta: { title: '管理员管理', icon: 'dashboard', roles: [1] }
       }
     ]
   },

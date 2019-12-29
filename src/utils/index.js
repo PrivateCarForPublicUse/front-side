@@ -105,3 +105,7 @@ export function param2Obj(url) {
       '"}'
   )
 }
+
+export function getIndex(currentPage, pageSize, index) {
+  return (currentPage - 1) * pageSize + index
+}

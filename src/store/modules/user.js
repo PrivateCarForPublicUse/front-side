@@ -6,7 +6,7 @@ const state = {
   token: getToken(),
   name: '',
   avatar: '',
-  roles: []
+  roles: -1
 }
 
 const mutations = {
@@ -50,14 +50,14 @@ const actions = {
           reject('Verification failed, please Login again.')
         }
 
-        const { roles, name, avatar } = data
+        const { isCompanyMaster, name, avatar } = data
 
         // roles must be a non-empty array
-        if (!roles || roles.length <= 0) {
+        if (!isCompanyMaster) { // || roles.length <= 0) {
           reject('getInfo: roles must be a non-null array!')
         }
 
-        commit('SET_ROLES', roles)
+        commit('SET_ROLES', isCompanyMaster)
         commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
         resolve(data)
@@ -72,7 +72,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
-        commit('SET_ROLES', [])
+        commit('SET_ROLES', -1)
         removeToken()
         resetRouter()
         resolve()
@@ -86,7 +86,7 @@ const actions = {
   resetToken({ commit }) {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
-      commit('SET_ROLES', [])
+      commit('SET_ROLES', -1)
       removeToken()
       resolve()
     })
