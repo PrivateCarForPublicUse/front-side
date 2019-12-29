@@ -45,7 +45,7 @@
               width="100%"
               class="intable-label"
             >
-              <el-table-column label="行驶长度(km)" width="500" align="center">
+              <el-table-column label="行驶路程" width="500" align="center">
                 <template slot-scope="scope">
                   {{ scope.row.origin }}——{{ scope.row.destination }}
                 </template>
@@ -55,8 +55,8 @@
                   {{ scope.row.carStartTime }}——{{ scope.row.carStopTime }}
                 </template>
               </el-table-column>
+              <el-table-column property="drivingCost" label="行驶长度(km)" align="center" />
               <el-table-column property="drivingCost" label="费用(元)" align="center" />
-              <el-table-column property="drivingCost" label="行驶里程" align="center" />
             </el-table>
           </div>
         </template>
