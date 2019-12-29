@@ -228,9 +228,6 @@ export default {
     }
   },
   created() {
-    for (var index in this.datalist) {
-      this.datalist[index].filledRoutes = this.fillingRoutes(this.datalist[index].routetest)
-    }
     this.datalist.map(item => {
       this.$set(item, 'checked', false)
       return item
@@ -239,19 +236,6 @@ export default {
   methods: {
     fetchDataList() {
       // todo
-    },
-    fillingRoutes(routes) {
-      var filledRoutes = []
-      for (var i = 0; i < routes.length; i++) {
-        if (i === 0) {
-          filledRoutes.push({ key: 0, title: '出发地', value: routes[0] })
-        } else if (i === routes.length - 1) {
-          filledRoutes.push({ key: i, title: '目的地', value: routes[i] })
-        } else {
-          filledRoutes.push({ key: i, title: '途径', value: routes[i] })
-        }
-      }
-      return filledRoutes
     },
     handleCurrentChange(val) {
       this.currentPage = val
