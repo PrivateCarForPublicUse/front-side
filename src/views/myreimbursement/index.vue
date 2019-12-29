@@ -39,21 +39,28 @@
     >
       <el-table-column type="expand">
         <template slot-scope="scope">
-          <el-form label-position="left" inline class="demo-table-expand">
-            <div class="form-title">
-              <a>行驶路径</a>
-            </div>
-            <el-form-item
-              v-for="route in scope.row.filledRoutes"
-              :key="route.key"
-              :label="route.title"
+          <div>
+            <el-table
+              :data="scope.row.secRoute"
+              width="100%"
+              class="intable-label"
             >
-              <span>{{ route.value }}</span>
-            </el-form-item>
-          </el-form>
+              <el-table-column label="行驶长度(km)" width="500" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.origin }}——{{ scope.row.destination }}
+                </template>
+              </el-table-column>
+              <el-table-column label="历经时间" width="350" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.carStartTime }}——{{ scope.row.carStopTime }}
+                </template>
+              </el-table-column>
+              <el-table-column property="drivingCost" label="费用(元)" align="center" />
+              <el-table-column property="drivingCost" label="行驶里程" align="center" />
+            </el-table>
+          </div>
         </template>
       </el-table-column>
-      <!-- <el-table-column type="selection" width="55" /> -->
       <el-table-column
         align="left"
         width="55"
@@ -81,12 +88,12 @@
           {{ scope.row.reason }}
         </template>
       </el-table-column>
-      <el-table-column label="行驶长度(km)" align="center">
+      <el-table-column label="行驶总长度(km)" align="center">
         <template slot-scope="scope">
           {{ scope.row.routeLength }}
         </template>
       </el-table-column>
-      <el-table-column label="费用(元)" align="center">
+      <el-table-column label="总费用(元)" align="center">
         <template slot-scope="scope">
           {{ scope.row.cost }}
         </template>
@@ -95,8 +102,8 @@
         <template slot-scope="scope">
           <el-tag
             size="medium"
-            :type="scope.row.reimburseType | statusFilter"
-          >{{ scope.row.reimburseType | statusWordsFilter }}</el-tag>
+            :type="scope.row.isReimburse | statusFilter"
+          >{{ scope.row.isReimburse | statusWordsFilter }}</el-tag>
         </template>
       </el-table-column>
     </el-table>
@@ -159,107 +166,20 @@ export default {
           label: '审核中'
         }
       ],
+      // 测试数据
       datalist: [
         {
           id: 1,
-          appleyTime: '2016-05-03',
+          appleyTime: '2016-05-03 11:00',
           reason: '哈哈服务部外设计费来看时空裂缝克拉斯',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
+          secRoute: [{
+            id: '1', origin: '浙江大学软件学院', destination: '宁波站（火车站）', carStartTime: '2019-12-12 12:00:00', carStopTime: '2019-12-12 12:00:00', drivingDistance: 20, drivingCost: 20
+          }, {
+            id: '2', origin: '宁波站（火车站）', destination: '浙江大学软件学院', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20 }],
           routeLength: 60.22,
           cost: 62.33,
-          reimburseType: 1
-        },
-        {
-          id: 4,
-          appleyTime: '2016-05-03',
-          reason: '哈哈服务部外设计费来看时空裂缝克拉斯',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: 2
-        },
-        {
-          id: 6,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: -1
-        },
-        {
-          id: 8,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: -1
-        },
-        {
-          id: 9,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: -1
-        },
-        {
-          id: 12,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: -1
-        },
-        {
-          id: 16,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: -1
-        },
-        {
-          id: 17,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: -1
-        },
-        {
-          id: 18,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: 0
-        },
-        {
-          id: 29,
-          appleyTime: '2016-05-03',
-          reason: '测试是啊是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: 0
-        },
-        {
-          id: 44,
-          appleyTime: '2016-05-03',
-          reason: '测试不是啊不是啊',
-          routetest: ['浙江大学软件学院', '宁波站（火车站）', '浙江大学软件学院'],
-          routeLength: 60.22,
-          cost: 62.33,
-          reimburseType: 0
-        }
-      ],
+          isReimburse: 0
+        }],
       chooseType: '',
       searchReason: '',
       searchItems: ['reason', 'routeLength', 'cost', 'applyTime']
@@ -270,7 +190,7 @@ export default {
       var type = this.chooseType
       var search = this.searchReason
       return this.datalist.filter((item) => {
-        return String(item['reimburseType']) === type || type === '' || type === null
+        return String(item['isReimburse']) === type || type === '' || type === null
       }).filter((dataNews) => {
         return Object.keys(dataNews).some((key) => {
           var item = (function(item, filters) {
@@ -291,7 +211,7 @@ export default {
       let items = this.datalist
       var tableOptions = []
       for (var index in items) {
-        if (items[index].reimburseType === 0) { tableOptions.push(items[index].id) }
+        if (items[index].isReimburse === 0) { tableOptions.push(items[index].id) }
       }
       return tableOptions
     }
@@ -317,6 +237,9 @@ export default {
     })
   },
   methods: {
+    fetchDataList() {
+      // todo
+    },
     fillingRoutes(routes) {
       var filledRoutes = []
       for (var i = 0; i < routes.length; i++) {
@@ -336,7 +259,7 @@ export default {
     handleCheckAllChange(val) {
       let that = this
       for (let i in that.tables) {
-        if (that.tables[i].reimburseType === 0) {
+        if (that.tables[i].isReimburse === 0) {
           if (val) {
             that.tables[i].checked = true
           } else {
@@ -362,14 +285,14 @@ export default {
     },
     isDisabel(val) {
       let that = this
-      var reimburse = that.tables[val + (that.currentPage - 1) * that.pageSize].reimburseType
+      var reimburse = that.tables[val + (that.currentPage - 1) * that.pageSize].isReimburse
       return reimburse !== 0
     },
     flashAllChecked() {
       let that = this
       that.checkAll = false
       for (let i in that.tables) {
-        if (that.tables[i].reimburseType === 0) {
+        if (that.tables[i].isReimburse === 0) {
           that.tables[i].checked = false
         }
       }
@@ -406,10 +329,6 @@ export default {
   margin-bottom: 10px;
 }
 .bos{
-  /* position: absolute;
-  bottom: 10px;
-  left: 50%;
-  margin-left: -170px; */
   text-align: center;
 }
 </style>
