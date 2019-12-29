@@ -90,7 +90,7 @@ export default {
   data() {
     return {
       currentPage: 1,
-      pageSize: 2,
+      pageSize: 10,
       listLoading: false,
       list: [],
       editFormVisible: false,
