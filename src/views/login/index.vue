@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">私车公用系统</h3>
       </div>
 
       <el-form-item prop="username">
@@ -43,9 +43,18 @@
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 
+      <el-form-item
+        style="border: none;background-color: rgba(0,0,0,0);margin-left: 110px"
+      >
+        <template>
+          <el-radio v-model="radio" label="1" @change="testRadioChange()">用户登录</el-radio>
+          <el-radio v-model="radio" label="2" @change="testRadioChange()">管理员登陆</el-radio>
+        </template>
+      </el-form-item>
+
       <div class="tips">
-        <span style="margin-right:20px;">username: user</span>
-        <span> password: 1234</span>
+        <span style="margin-right:20px;">user: user|1234</span>
+        <span>master: 1ssss|123456</span>
       </div>
 
     </el-form>
@@ -85,7 +94,8 @@ export default {
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      radio: '1'
     }
   },
   watch: {
@@ -111,17 +121,44 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/userLogin', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
+          // 普通用户登录
+          if (this.radio === '1') {
+            this.$store.dispatch('user/userLogin', this.loginForm).then(() => {
+              this.$router.push({ path: this.redirect || '/' })
+              this.loading = false
+            }).catch(() => {
+              this.loading = false
+            })
+          }
+          // 管理员登陆
+          if (this.radio === '2') {
+            this.$store.dispatch('user/masterLogin', this.loginForm).then(() => {
+              this.$router.push({ path: this.redirect || '/' })
+              this.loading = false
+            }).catch(() => {
+              this.loading = false
+            })
+          }
         } else {
           console.log('error submit!!')
           return false
         }
       })
+    },
+    testRadioChange: function() {
+      console.log(this.radio)
+      if (this.radio === '1') {
+        this.loginForm = {
+          username: 'user',
+          password: '1234'
+        }
+      } else {
+        this.loginForm.username = '1ssss'
+        this.loginForm = {
+          username: '1ssss',
+          password: '123456'
+        }
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import { userLogin, login, logout, getInfo } from '@/api/user'
+import { masterLogin, userLogin, login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
@@ -44,6 +44,20 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       userLogin({ userName: username.trim(), password: password }).then(response => {
+        const { data } = response
+        commit('SET_TOKEN', data.account.token)
+        setToken(data.account.token)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+  // 管理员登录
+  masterLogin({ commit }, userInfo) {
+    const { username, password } = userInfo
+    return new Promise((resolve, reject) => {
+      masterLogin({ masterName: username.trim(), password: password }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.account.token)
         setToken(data.account.token)

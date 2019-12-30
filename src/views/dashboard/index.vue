@@ -102,30 +102,43 @@
             />
           </div>
         </el-form-item>
-        <el-form-item label="开始" class="input-label input-label-right" prop="inputStartTime">
-          <div class="block">
-            <el-date-picker
-              v-model="applyForm.inputStartTime"
-              size="small"
-              type="datetime"
-              align="right"
-              placeholder="开始用车时间"
-              :default-time="'12:00:00'"
+        <el-form-item label="时间" class="input-label input-label-right">
+          <template>
+            <el-time-picker
+              v-model="applyTimeValue"
+              is-range
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              placeholder="选择时间范围"
+              style="width:220px"
             />
-          </div>
+          </template>
         </el-form-item>
-        <el-form-item label="结束" class="input-label input-label-right" prop="inputFinishTime">
-          <div class="block">
-            <el-date-picker
-              v-model="applyForm.inputFinishTime"
-              size="small"
-              type="datetime"
-              align="right"
-              placeholder="结束用车时间"
-              :default-time="'18:00:00'"
-            />
-          </div>
-        </el-form-item>
+        <!--        <el-form-item label="开始" class="input-label input-label-right" prop="inputStartTime">-->
+        <!--          <div class="block">-->
+        <!--            <el-date-picker-->
+        <!--              v-model="applyForm.inputStartTime"-->
+        <!--              size="small"-->
+        <!--              type="datetime"-->
+        <!--              align="right"-->
+        <!--              placeholder="开始用车时间"-->
+        <!--              :default-time="'12:00:00'"-->
+        <!--            />-->
+        <!--          </div>-->
+        <!--        </el-form-item>-->
+        <!--        <el-form-item label="结束" class="input-label input-label-right" prop="inputFinishTime">-->
+        <!--          <div class="block">-->
+        <!--            <el-date-picker-->
+        <!--              v-model="applyForm.inputFinishTime"-->
+        <!--              size="small"-->
+        <!--              type="datetime"-->
+        <!--              align="right"-->
+        <!--              placeholder="结束用车时间"-->
+        <!--              :default-time="'18:00:00'"-->
+        <!--            />-->
+        <!--          </div>-->
+        <!--        </el-form-item>-->
         <el-form-item label="选择车辆类型" class="input-label input-label-right">
           <el-radio v-model="applyForm.carPrivate" label="1">我的</el-radio>
           <el-radio v-model="applyForm.carPrivate" label="0">共有</el-radio>
@@ -136,6 +149,8 @@
             class="input-text"
             size="small"
             placeholder="选择出行车辆"
+            contenteditable="false"
+            readonly="true"
             @focus="handleShowDialog"
           />
         </el-form-item>
@@ -167,15 +182,15 @@
           stripe
           :data="carData"
         >
-          <el-table-column property="band" label="车牌" width="100" align="center" />
-          <el-table-column property="type" label="车型" width="100" align="center" />
+          <el-table-column prop="car.band" label="车牌" width="100" align="center" />
+          <el-table-column prop="car.type" label="车型" width="100" align="center" />
           <el-table-column label="选择" align="center" width="100">
             <template slot-scope="scope">
               <el-button
                 size="small"
                 type="primary"
                 align="center"
-                @click="handleChooseCar(scope.row.id, scope.row.band,scope.row.type)"
+                @click="handleChooseCar(scope.row.car.id, scope.row.car.band,scope.row.car.type,scope.row.car.license)"
               >选择</el-button>
             </template>
           </el-table-column>
@@ -189,12 +204,12 @@
           stripe
           :data="carData"
         >
-          <el-table-column property="band" label="车牌" width="100" align="center" />
-          <el-table-column property="user" label="车主" width="100" align="center" />
-          <el-table-column property="StarOfCar" label="星级" width="100" align="center" />
+          <el-table-column property="car.band" label="车牌" width="100" align="center" />
+          <el-table-column property="user.userName" label="车主" width="100" align="center" />
+          <el-table-column property="car.StarOfCar" label="星级" width="100" align="center" />
           <el-table-column label="用车时间" align="center" width="200">
             <template slot-scope="scope">
-              {{ scope.row.startTime }}-{{ scope.row.endTime }}
+              {{ scope.row.car.startTime }}-{{ scope.row.car.endTime }}
             </template>
           </el-table-column>
           <el-table-column label="选择" align="center" width="100">
@@ -203,7 +218,7 @@
                 size="small"
                 type="primary"
                 align="center"
-                @click="handleChooseCar(scope.row.id,scope.row.band,scope.row.type)"
+                @click="handleChooseCar(scope.row.car.id,scope.row.car.band,scope.row.car.type,scope.row.car.license)"
               >选择</el-button>
             </template>
           </el-table-column>
@@ -296,11 +311,12 @@ export default {
         start: '',
         end: '',
         inputReason: '',
-        inputStartTime: null,
+        inputStartTime: '12:00',
         inputFinishTime: null,
         carPrivate: '1',
         chooseCar: null
       },
+      applyTimeValue: [new Date(2020, 1, 1, 12, 0), new Date(2020, 1, 1, 12, 1)], // [this.applyForm.inputStartTime, this.applyForm.inputFinishTime],
       rules: {
         start: [{ validator: validateStart, trigger: 'blur' }],
         end: [{ validator: validateEnd, trigger: 'blur' }],
@@ -361,6 +377,7 @@ export default {
   methods: {
     getMarkerLocations() {
       let index; let locations = []
+      console.log('hh')
       for (index in this.markers) {
         locations.push({
           latitude: this.markers[index].getPosition().getLat(),
@@ -370,20 +387,21 @@ export default {
       return locations
     },
     sendApplyCar() {
+      let lats = this.getMarkerLocations()
       let params = {
         carId: this.chooseCarId,
-        startTime: this.startTime,
-        endTime: this.applyForm.endTime,
+        startTime: this.applyForm.inputStartTime,
+        endTime: this.applyForm.inputFinishTime,
         names: this.routeFormRoutes,
-        reason: this.applyForm.reason,
-        lats: this.getMarkerLocations
+        reason: this.applyForm.inputReason,
+        lats
       }
       applyCar(params).then(response => {
-        if (response.data) {
-          Message({
-            message: res.message || 'Error',
-            type: 'success',
-            duration: 5 * 1000
+        if (response.code === 200) {
+          this.$message({
+            showClose: true,
+            message: '申请成功！',
+            type: 'success'
           })
         }
       })
@@ -391,7 +409,6 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          alert('submit!')
           this.sendApplyCar()
         } else {
           console.log('error submit!!')
@@ -401,16 +418,16 @@ export default {
     },
     checkTimeAviable() {
       let vaild = true
-      this.$refs.applyForm.validateField('inputStartTime', (errMsg) => {
-        if (errMsg) {
-          vaild = false
-        }
-      })
-      this.$refs.applyForm.validateField('inputFinishTime', (errMsg) => {
-        if (errMsg) {
-          vaild = false
-        }
-      })
+      // this.$refs.applyForm.validateField('inputStartTime', (errMsg) => {
+      //   if (errMsg) {
+      //     vaild = false
+      //   }
+      // })
+      // this.$refs.applyForm.validateField('inputFinishTime', (errMsg) => {
+      //   if (errMsg) {
+      //     vaild = false
+      //   }
+      // })
       return vaild
     },
     querySearch(queryString, cb) {
@@ -451,9 +468,11 @@ export default {
     },
     handleShowDialog() {
       if (this.checkTimeAviable()) {
+        this.applyForm.inputStartTime = this.applyTimeValue[0].Format('hh:mm')
+        this.applyForm.inputFinishTime = this.applyTimeValue[1].Format('hh:mm')
         let params = {
-          'startTime': this.applyForm.inputStartTime.Format('yyyy-MM-dd hh:mm'),
-          'endTime': this.applyForm.inputFinishTime.Format('yyyy-MM-dd hh:mm'),
+          'startTime': this.applyForm.inputStartTime,
+          'endTime': this.applyForm.inputFinishTime,
           'isMine': this.applyForm.carPrivate - '0' }
         console.log(params)
         getCarByTime(params).then(response => {
@@ -467,11 +486,11 @@ export default {
         })
       }
     },
-    handleChooseCar(val, band, type) {
+    handleChooseCar(val, band, type, license) {
       this.chooseCarId = val
       this.dialogPublicTableVisible = false
       this.dialogTableVisible = false
-      this.applyForm.chooseCar = band + '-' + type
+      this.applyForm.chooseCar = band + '-' + type + ' | ' + license
     },
     handleSelect(item) {
       let that = this
@@ -480,7 +499,7 @@ export default {
         if (district !== -1) {
           this.chooseCity = district
         } else {
-          console.log(没有具体信息)
+          console.log('没有具体信息')
         }
         that.map.setZoom(13)
         that.map.setCenter(item.location)

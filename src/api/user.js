@@ -11,7 +11,7 @@ export function login(data) {
 export function getInfo(token) {
   return request({
     baseURL: process.env.VUE_APP_BASE_API2,
-    url: '/authorize/login/token',
+    url: '/authorize/info',
     method: 'post',
     data: { token }
   })
@@ -29,6 +29,16 @@ export function userLogin(params) {
   return request({
     baseURL: process.env.VUE_APP_BASE_API2,
     url: '/authorize/login/username',
+    method: 'post',
+    data: params
+  })
+}
+
+// 管理员登录
+export function masterLogin(params) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/authorize/login/masterName',
     method: 'post',
     data: params
   })
