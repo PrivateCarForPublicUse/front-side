@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/user'
+import { masterLogin, userLogin, login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 
@@ -39,6 +39,34 @@ const actions = {
       })
     })
   },
+  // 用户登录
+  userLogin({ commit }, userInfo) {
+    const { username, password } = userInfo
+    return new Promise((resolve, reject) => {
+      userLogin({ userName: username.trim(), password: password }).then(response => {
+        const { data } = response
+        commit('SET_TOKEN', data.account.token)
+        setToken(data.account.token)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
+  // 管理员登录
+  masterLogin({ commit }, userInfo) {
+    const { username, password } = userInfo
+    return new Promise((resolve, reject) => {
+      masterLogin({ masterName: username.trim(), password: password }).then(response => {
+        const { data } = response
+        commit('SET_TOKEN', data.account.token)
+        setToken(data.account.token)
+        resolve()
+      }).catch(error => {
+        reject(error)
+      })
+    })
+  },
 
   // get user info
   getInfo({ commit, state }) {
@@ -50,16 +78,16 @@ const actions = {
           reject('Verification failed, please Login again.')
         }
 
-        const { isCompanyMaster, name, avatar } = data
+        let { isCompanyMaster, name, avatar } = data
 
         // roles must be a non-empty array
         if (!isCompanyMaster) { // || roles.length <= 0) {
-          reject('getInfo: roles must be a non-null array!')
+          isCompanyMaster = -2
+          // reject('getInfo: roles must be a non-null array!')
         }
-
         commit('SET_ROLES', isCompanyMaster)
         commit('SET_NAME', name)
-        commit('SET_AVATAR', avatar)
+        commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
         resolve(data)
       }).catch(error => {
         reject(error)

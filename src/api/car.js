@@ -13,7 +13,7 @@ export function getMyCarInfo(params) {
 
 export function getAllCars() {
   return request({
-    url: '/car/',
+    url: '/car/all',
     method: 'get',
     baseURL: process.env.VUE_APP_BASE_API2
   })
@@ -25,5 +25,14 @@ export function updateCar(data) {
     method: 'put',
     baseURL: process.env.VUE_APP_BASE_API2,
     data
+  })
+}
+
+// 根据审核状态返回车辆
+export function getAuditCars(params) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/car/isUse/' + params,
+    method: 'get'
   })
 }

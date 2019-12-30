@@ -229,7 +229,7 @@ export const asyncRoutes = [
   {
     path: '/permission',
     component: Layout,
-    meta: { title: '权限测试', icon: 'dashboard' },
+    meta: { title: '权限测试', icon: 'dashboard', roles: [0, 1] },
     name: '权限测试',
     children: [
       {
@@ -255,7 +255,7 @@ export const asyncRoutes = [
     path: '/audit',
     name: '审核管理',
     component: Layout,
-    meta: { title: '审核管理', icon: 'dashboard' },
+    meta: { title: '审核管理', icon: 'dashboard', roles: [0, 1] },
     children: [{
       path: '/audit/user',
       name: '用户审核',
@@ -272,6 +272,7 @@ export const asyncRoutes = [
   {
     path: '/master/user',
     name: '用户管理',
+    meta: { roles: [0, 1] },
     component: Layout,
     children: [
       {

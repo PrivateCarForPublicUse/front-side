@@ -10,9 +10,10 @@ export function login(data) {
 
 export function getInfo(token) {
   return request({
-    url: '/user/info',
-    method: 'get',
-    params: { token }
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/authorize/info',
+    method: 'post',
+    data: { token }
   })
 }
 
@@ -20,6 +21,26 @@ export function logout() {
   return request({
     url: '/user/logout',
     method: 'post'
+  })
+}
+
+// 普通用户登录
+export function userLogin(params) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/authorize/login/username',
+    method: 'post',
+    data: params
+  })
+}
+
+// 管理员登录
+export function masterLogin(params) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/authorize/login/masterName',
+    method: 'post',
+    data: params
   })
 }
 
