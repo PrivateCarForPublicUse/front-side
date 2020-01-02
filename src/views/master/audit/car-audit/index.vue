@@ -20,16 +20,17 @@
         <template scope="scope">
           <el-tag
             size="medium"
-            :type="scope.row.checkStatus | statusFilter"
-          >{{ scope.row.checkStatus | statusWordsFilter }}</el-tag>
+            :type="scope.row.isUse | statusFilter"
+          >{{ scope.row.isUse | statusWordsFilter }}</el-tag>
         </template>
       </el-table-column>
       <!--      <el-table-column label="身份证信息" />-->
       <!--      <el-table-column label="驾驶证信息" />-->
       <el-table-column label="操作">
         <template scope="scope">
-          <el-button size="mini" @click="handleEdit(scope.$index,scope.row)">编辑</el-button>
-          <el-button size="mini" @click="handleDelete(scope.$index,scope.row)">删除</el-button>
+          <el-button size="mini" @click="auditPass(scope.$index,scope.row,0)">审核通过</el-button>
+          <el-button size="mini" @click="auditPass(scope.$index,scope.row,1)">撤销审核</el-button>
+          <el-button size="mini" @click="auditPass(scope.$index,scope.row,-1)">审核不通过</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -86,7 +87,7 @@
 </template>
 
 <script>
-import { getAllCars, updateCar } from '@/api/car'
+import { getAllAuditCars, getAllCars, updateCar } from '@/api/car'
 
 export default {
   name: 'Index',
@@ -150,9 +151,21 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getAllCars().then(response => {
+      getAllAuditCars().then(response => {
         this.list = response.data
-        this.listLoading = false
+      })
+      this.listLoading = false
+    },
+    auditPass(index, row, check) {
+      row.isUse = check
+      updateCar(Object.assign({}, row)).then(response => {
+        if (response.code === 200) {
+          this.$message({
+            showClose: true,
+            message: '修改成功',
+            type: 'success'
+          })
+        }
       })
     },
     handleCurrentChange(val) {

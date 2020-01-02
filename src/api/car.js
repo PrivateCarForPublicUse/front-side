@@ -4,7 +4,7 @@ import request from '@/utils/request.js'
 // 当前是获取所有车辆信息，目前还不能区分“我的”，需要获取当前登录用户的id
 export function getMyCarInfo(params) {
   return request({
-    url: '/car/',
+    url: '/car/myAllCar',
     method: 'GET',
     baseURL: process.env.VUE_APP_BASE_API2,
     params
@@ -14,6 +14,14 @@ export function getMyCarInfo(params) {
 export function getAllCars() {
   return request({
     url: '/car/all',
+    method: 'get',
+    baseURL: process.env.VUE_APP_BASE_API2
+  })
+}
+
+export function getAllAuditCars() {
+  return request({
+    url: '/car/reviewAddCar',
     method: 'get',
     baseURL: process.env.VUE_APP_BASE_API2
   })

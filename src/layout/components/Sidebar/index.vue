@@ -11,7 +11,11 @@
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
         mode="vertical"
+        style="margin-top:50px"
       >
+        <sidebar-item :item="aaa" style="font-size:22px">
+          私车公用aaa
+        </sidebar-item>
         <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" />
       </el-menu>
     </el-scrollbar>
@@ -23,11 +27,22 @@ import { mapGetters } from 'vuex'
 import Logo from './Logo'
 import SidebarItem from './SidebarItem'
 import variables from '@/styles/variables.scss'
+import Layout from '../../index'
 
 export default {
   components: { SidebarItem, Logo },
   data() {
     return {
+      aaa: {
+        path: '私车公用系统',
+        component: Layout,
+        children: [
+          {
+            path: '',
+            meta: { title: '私车公用系统', icon: 'link' }
+          }
+        ]
+      },
       timer: null
     }
   },

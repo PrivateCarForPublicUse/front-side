@@ -34,12 +34,13 @@ router.beforeEach(async(to, from, next) => {
         try {
           // get user info
           // note: roles must be a object array! such as: ['admin'] or ,['developer','editor']
-          const { isCompanyMaster } = await store.dispatch('user/getInfo')
+          let { isCompanyMaster } = await store.dispatch('user/getInfo')
+          if (!isCompanyMaster)isCompanyMaster = -2
           // generate accessible routes map based on roles
           const accessRoutes = await store.dispatch('permission/generateRoutes', isCompanyMaster)
 
           // dynamically add accessible routes
-          // router.addRoutes(accessRoutes)
+          router.addRoutes(accessRoutes)
           if (accessRoutes) {
             let routes
             routes = router.options.routes.concat(accessRoutes)

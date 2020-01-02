@@ -1,29 +1,29 @@
 <template>
   <div class="app-container">
-    <el-form ref="form" label-width="120px" :model="form">
-      <el-form-item label="预约时间">
-        <el-input v-model="form.time" />
-      </el-form-item>
-      <el-form-item label="路径">
-        <el-input v-model="form.route" />
-      </el-form-item>
-      <el-form-item label="搜索">
-        <el-select v-model="form.select">
-          <!--          <el-option label="Zone one" value="shanghai" />-->
-          <!--          <el-option label="Zone two" value="beijing" />-->
-          <el-option v-for="(item,index) in searchType" :key="index" :label="item" :value="item" />
-        </el-select>
-        <el-input v-model="form.search" style="width:200px" placeholder="搜索" />
-      </el-form-item>
-      <el-form-item label="搜索">
-        <el-input v-model="form.search" placeholder="请输入内容" class="input-with-select">
-          <el-select slot="prepend" v-model="form.select" placeholder="请选择" style="width:150px">
-            <el-option v-for="(item,index) in searchType" :key="index" :label="item" :value="item" />
-          </el-select>
-          <el-button slot="append" icon="el-icon-search" />
-        </el-input>
-      </el-form-item>
-    </el-form>
+    <!--    <el-form ref="form" label-width="120px" :model="form">-->
+    <!--      <el-form-item label="预约时间">-->
+    <!--        <el-input v-model="form.time" />-->
+    <!--      </el-form-item>-->
+    <!--      <el-form-item label="路径">-->
+    <!--        <el-input v-model="form.route" />-->
+    <!--      </el-form-item>-->
+    <!--      <el-form-item label="搜索">-->
+    <!--        <el-select v-model="form.select">-->
+    <!--          &lt;!&ndash;          <el-option label="Zone one" value="shanghai" />&ndash;&gt;-->
+    <!--          &lt;!&ndash;          <el-option label="Zone two" value="beijing" />&ndash;&gt;-->
+    <!--          <el-option v-for="(item,index) in searchType" :key="index" :label="item" :value="item" />-->
+    <!--        </el-select>-->
+    <!--        <el-input v-model="form.search" style="width:200px" placeholder="搜索" />-->
+    <!--      </el-form-item>-->
+    <!--      <el-form-item label="搜索">-->
+    <!--        <el-input v-model="form.search" placeholder="请输入内容" class="input-with-select">-->
+    <!--          <el-select slot="prepend" v-model="form.select" placeholder="请选择" style="width:150px">-->
+    <!--            <el-option v-for="(item,index) in searchType" :key="index" :label="item" :value="item" />-->
+    <!--          </el-select>-->
+    <!--          <el-button slot="append" icon="el-icon-search" />-->
+    <!--        </el-input>-->
+    <!--      </el-form-item>-->
+    <!--    </el-form>-->
     <!--测试表格    -->
     <!--    <el-table-->
     <!--      v-loading="false"-->
@@ -58,12 +58,29 @@
       <el-table-column prop="license" label="车牌号" />
       <el-table-column prop="band" label="品牌" />
       <el-table-column prop="type" label="车型" />
-      <el-table-column prop="isPublic" label="是否为公车" />
-      <el-table-column prop="isUse" label="是否在使用中" />
+      <el-table-column prop="isPublic" label="是否为公车">
+        <template scope="scope">
+          <el-tag size="medium" :type="scope.row.isPublic | isPublicFilter">
+            {{ scope.row.isPublic | isPublicWordsFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="isUse" label="车辆状态">
+        <template scope="scope">
+          <el-tag size="medium" :type="scope.row.isUse | isUseFilter">
+            {{ scope.row.isUse | isUseWordsFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="starTime" label="预约-开始时间" />
       <el-table-column prop="endTime" label="预约-结束时间" />
       <el-table-column prop="displacement" label="耗油量" />
       <el-table-column prop="starOfCar" label="星级评分" />
+      <!--      <el-table-column label="操作">-->
+      <!--        <template>-->
+      <!--          <el-button type="primary" size="small">选择车辆</el-button>-->
+      <!--        </template>-->
+      <!--      </el-table-column>-->
     </el-table>
   </div>
 </template>
@@ -72,6 +89,40 @@
 import { getMyCarInfo } from '@/api/car'
 
 export default {
+  filters: {
+    isPublicFilter(status) {
+      const statusMap = {
+        '1': 'gray',
+        '0': 'info'
+      }
+      return statusMap[status]
+    },
+    isPublicWordsFilter(status) {
+      const statusMap = {
+        '1': '公车',
+        '0': '私车'
+      }
+      return statusMap[status]
+    }, // //使用状态（0 空闲；1 审核中；2 使用中 ；审核不通过-1）
+    isUseFilter(status) {
+      const statusMap = {
+        '1': 'warning',
+        '0': 'success',
+        '-1': 'danger',
+        '2': 'gray'
+      }
+      return statusMap[status]
+    },
+    isUseWordsFilter(status) {
+      const statusMap = {
+        '1': '审核中',
+        '0': '空闲',
+        '-1': '审核失败',
+        '2': '使用中'
+      }
+      return statusMap[status]
+    }
+  },
   data() {
     return {
       form: {

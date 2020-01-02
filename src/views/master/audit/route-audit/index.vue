@@ -9,20 +9,20 @@
       fit
       highlight-current-row
     >
-      <el-table-column label="开始时间" prop="applyStartTime" />
-      <el-table-column label="结束时间" prop="applyEndTime" />
-      <el-table-column label="车辆" prop="carId" />
-      <el-table-column label="用户" prop="userId" />
-      <el-table-column label="行程状态" prop="status" />
-      <el-table-column label="申请原因" prop="reason" />
+      <el-table-column label="开始时间" prop="route.applyStartTime" />
+      <el-table-column label="结束时间" prop="route.applyEndTime" />
+      <el-table-column label="车辆" prop="route.carId" />
+      <el-table-column label="用户" prop="route.userId" />
+      <el-table-column label="行程状态" prop="route.status" />
+      <el-table-column label="申请原因" prop="route.reason" />
       <!--      <el-table-column label="身份证信息" />-->
       <!--      <el-table-column label="驾驶证信息" />-->
       <el-table-column label="审核状态">
         <template scope="scope">
           <el-tag
             size="medium"
-            :type="scope.row.status | statusFilter"
-          >{{ scope.row.status | statusWordsFilter }}</el-tag>
+            :type="scope.row.route.status | statusFilter"
+          >{{ scope.row.route.status | statusWordsFilter }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作">
@@ -105,7 +105,7 @@ export default {
   data() {
     return {
       currentPage: 1,
-      pageSize: 2,
+      pageSize: 10,
       listLoading: false,
       list: [],
       editFormVisible: false,
@@ -150,8 +150,8 @@ export default {
       })
     },
     auditPass(index, row, check) {
-      row.status = check
-      updateRoute(Object.assign({}, row)).then(response => {
+      row.route.status = check
+      updateRoute(Object.assign({}, row.route)).then(response => {
         if (response.code === 200) {
           this.$message({
             showClose: true,

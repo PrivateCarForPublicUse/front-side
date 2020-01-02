@@ -6,6 +6,7 @@
         class="input-text"
         placeholder="输入搜索词"
         clearable
+        @input="textChangeFun"
       >
         <i slot="prefix" class="el-input__icon el-icon-search" />
       </el-input>
@@ -14,7 +15,9 @@
         placeholder="申请状态"
         clearable
         class="filter-item"
+        filterable
         style="width: 130px"
+        @change="chooseTypeFun"
       >
         <el-option
           v-for="item in applyOptions"
@@ -25,11 +28,13 @@
       </el-select>
     </div>
     <el-table
-      :data="tables"
+      v-loading="listLoading"
+      :data="datalist.slice((currentPage-1)*pageSize,currentPage*pageSize)"
       style="width: 100%"
       fit
       stripe
       highlight-current-row
+      element-loading-text="Loading"
     >
       <el-table-column type="expand">
         <template slot-scope="scope">
@@ -50,38 +55,53 @@
       <el-table-column label="申请时间" width="180" align="center">
         <template slot-scope="scope">
           <i class="el-icon-time" />
-          <span style="margin-left: 10px">{{ scope.row.applyTime }}</span>
+          <span style="margin-left: 10px">{{ scope.row.route.applyTime }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="申请用车时间" width="400" align="center">
+      <!--      <el-table-column label="申请用车时间" width="400" align="center">-->
+      <!--        <template slot-scope="scope">-->
+      <!--          {{ scope.row.startTime }}——{{ scope.row.endTime }}-->
+      <!--        </template>-->
+      <!--      </el-table-column>-->
+      <el-table-column label="行程路径" width="400" :show-overflow-tooltip="true">
         <template slot-scope="scope">
-          {{ scope.row.startTime }}——{{ scope.row.endTime }}
+          <!--          {{ scope.row | routePathFilter }}-->
+          {{ scope.row.routesName }}
         </template>
       </el-table-column>
+      <el-table-column label="申请车辆" width="200" prop="carInfo" />
       <el-table-column label="申请原因" width="500" align="center">
         <template slot-scope="scope">
-          {{ scope.row.reason }}
+          {{ scope.row.route.reason }}
         </template>
       </el-table-column>
-      <el-table-column label="申请状态" align="center">
+      <el-table-column label="行程状态" align="center">
         <template slot-scope="scope">
           <el-tag
             size="medium"
-            :type="scope.row.status | statusFilter"
-          >{{ scope.row.status | statusWordsFilter }}</el-tag>
+            :type="scope.row.route.status | statusFilter"
+          >{{ scope.row.route.status | statusWordsFilter }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center">
+      <el-table-column label="报销状态">
         <template slot-scope="scope">
-          <el-button
-            size="small"
-            type="primary"
-            :disabled="checkAviable(scope.row.status)"
-          >
-            取消申请
-          </el-button>
+          <el-tag
+            size="medium"
+            :type="scope.row.route.isReimburse | reimburseFilter"
+          >{{ scope.row.route.isReimburse | reimburseWordsFilter }}</el-tag>
         </template>
       </el-table-column>
+      <!--      <el-table-column label="操作" align="center">-->
+      <!--        <template slot-scope="scope">-->
+      <!--          <el-button-->
+      <!--            size="small"-->
+      <!--            type="primary"-->
+      <!--            :disabled="checkAviable(scope.row.route.status)"-->
+      <!--          >-->
+      <!--            取消申请-->
+      <!--          </el-button>-->
+      <!--        </template>-->
+      <!--      </el-table-column>-->
     </el-table>
     <div class="bos">
       <el-pagination
@@ -96,6 +116,8 @@
   </div>
 </template>
 <script>
+import { getMyRouteByRouteModel } from '../../api/route'
+
 export default {
   filters: {
     statusFilter(status) {
@@ -115,10 +137,37 @@ export default {
         '0': '未审核',
         '-1': '审核失败',
         '2': '行程中',
-        '3': '完成',
-        '4': '取消'
+        '3': '已完成',
+        '4': '已取消'
       }
       return statusMap[status]
+    },
+    reimburseFilter(status) {
+      const statusMap = {
+        '1': 'success',
+        '0': 'gray',
+        '-1': 'danger',
+        '2': 'warning'
+      }
+      return statusMap[status]
+    },
+    reimburseWordsFilter(status) {
+      const statusMap = {
+        '1': '已报销',
+        '0': '未报销',
+        '-1': '报销失败',
+        '2': '审核中'
+      }
+      return statusMap[status]
+    },
+    routePathFilter(row) {
+      let route = []
+      if (row.secRoutesModel.length === 0) return
+      route.push(row.secRoutesModel[0].secRoute.origin)
+      row.secRoutesModel.forEach(r => {
+        route.push(r.secRoute.destination)
+      })
+      return route.join(' -> ')
     }
   },
   data() {
@@ -127,6 +176,8 @@ export default {
       currentPage: 1,
       search: '',
       chooseType: '',
+      listLoading: true,
+      datalistOld: [],
       datalist: [
         {
           id: 1,
@@ -202,25 +253,54 @@ export default {
   },
   computed: {
     tables() {
-      var type = this.chooseType
-      return this.datalist.filter((item) => {
-        return String(item['status']) === type || type === '' || type === null
-      }).filter((dataNews) => {
-        return Object.keys(dataNews).some((key) => {
-          return String(dataNews[key]).toLowerCase().indexOf(this.search) > -1
-        })
-      })
+      // let type = this.chooseType
+      // // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      // this.datalist = this.datalist.filter((item) => {
+      //   return String(item.route['status']) === type || type === '' || type === null
+      // // })
+      // }).filter((dataNews) => {
+      //   return Object.keys(dataNews.route).some((key) => {
+      //     return String(dataNews.route[key]).toLowerCase().indexOf(this.search) > -1
+      //   })
+      // })
+      return this.datalist
     },
     total() {
       return this.tables.length
     }
   },
   created() {
-    for (var index in this.datalist) {
-      this.datalist[index].filledRoutes = this.fillingRoutes(this.datalist[index].secRoute)
-    }
+    this.fetchData()
   },
   methods: {
+    fetchData() {
+      this.listLoading = true
+      getMyRouteByRouteModel().then(response => {
+        if (response.code === 200) {
+          this.datalist = response.data
+          this.datalist.forEach(data => {
+            data.filledRoutes = this.fillingRoutes(data.secRoutesModel)
+            data.routesName = this.fillingRoutesName(data.secRoutesModel)
+            data.carInfo = data.car.band + '-' + data.car.type + ' | ' + data.car.license
+          })
+          this.datalistOld = this.datalist
+          this.listLoading = false
+        }
+      })
+    },
+    chooseTypeFun(val) {
+      this.datalist = this.datalistOld.filter((item) => {
+        return String(item.route['status']) === val || val === '' || val === null
+      })
+    },
+    textChangeFun(val) {
+      this.datalist = this.datalistOld.filter((dataNews) => {
+        if (dataNews.routesName && String(dataNews['routesName']).indexOf(val) > -1) { return true }
+        return Object.keys(dataNews.route).some((key) => {
+          return String(dataNews.route[key]).toLowerCase().indexOf(val) > -1
+        })
+      })
+    },
     checkAviable(val) {
       if (val === 3 || val === 2) {
         return true
@@ -232,16 +312,29 @@ export default {
       this.currentPage = val
     },
     fillingRoutes(routes) {
-      var filledRoutes = []
-      filledRoutes.push({ key: 0, title: '出发地', value: routes[0].origin })
-      for (var i = 0; i < routes.length; i++) {
+      if (routes.length === 0) return
+      let filledRoutes = []
+      filledRoutes.push({ key: 0, title: '出发地', value: routes[0].secRoute.origin })
+      for (let i = 0; i < routes.length; i++) {
         if (i === routes.length - 1) {
-          filledRoutes.push({ key: i, title: '目的地', value: routes[i].destination })
+          filledRoutes.push({ key: i + 1, title: '目的地', value: routes[i].secRoute.destination })
         } else {
-          filledRoutes.push({ key: i, title: '途径', value: routes[i].destination })
+          filledRoutes.push({ key: i + 1, title: '途径', value: routes[i].secRoute.destination })
         }
       }
       return filledRoutes
+    },
+    fillingRoutesName(routes) {
+      if (routes.length === 0) return
+      let name = [routes[0].secRoute.origin]
+      for (var i = 0; i < routes.length; i++) {
+        if (i === routes.length - 1) {
+          name.push(routes[i].secRoute.destination)
+        } else {
+          name.push(routes[i].secRoute.destination)
+        }
+      }
+      return name.join(' -> ')
     }
   }
 }

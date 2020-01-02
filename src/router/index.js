@@ -42,8 +42,11 @@ export const constantRoutes = [
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
-  },
-
+  }
+]
+// 异步挂载的路由
+// 动态需要根据权限加载的路由表
+export const asyncRoutes = [
   {
     path: '/',
     component: Layout,
@@ -52,7 +55,7 @@ export const constantRoutes = [
       path: 'dashboard',
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '首页', icon: 'dashboard' }
+      meta: { title: '申请用车', icon: 'dashboard', roles: [-2] }
     }]
   },
   {
@@ -63,7 +66,7 @@ export const constantRoutes = [
       path: 'index',
       name: 'Myreimbursement',
       component: () => import('@/views/myreimbursement/index'),
-      meta: { title: '我的报销', icon: 'dashboard' }
+      meta: { title: '我的报销', icon: 'dashboard', roles: [-2] }
     }]
   },
   {
@@ -74,7 +77,7 @@ export const constantRoutes = [
       path: 'index',
       name: 'Myroute',
       component: () => import('@/views/myroute/index'),
-      meta: { title: '我的行程', icon: 'dashboard' }
+      meta: { title: '我的行程', icon: 'dashboard', roles: [-2] }
     }]
   },
   {
@@ -85,7 +88,7 @@ export const constantRoutes = [
       path: 'index',
       name: 'Publiccar',
       component: () => import('@/views/publiccar/index'),
-      meta: { title: '共有车库', icon: 'dashboard' }
+      meta: { title: '共有车库', icon: 'dashboard', roles: [-2] }
     }]
   },
   {
@@ -93,18 +96,100 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/mycar/carinfo',
     name: 'mycar',
-    meta: { title: '我的车辆', icon: 'dashboard' },
+    meta: { title: '我的车辆', icon: 'dashboard', roles: [-2] },
     children: [{
       path: 'carinfo',
       name: 'Carinfo',
       component: () => import('@/views/mycar/carinfo/index'),
-      meta: { title: '车辆信息', icon: 'dashboard' }
+      meta: { title: '车辆信息', icon: 'dashboard', roles: [-2] }
     }, {
       path: 'carroute',
-      name: 'Carroute',
+      name: 'carroute',
       component: () => import('@/views/mycar/carroute/index'),
-      meta: { title: '车辆行程', icon: 'dashboard' }
+      meta: { title: '车辆行程', icon: 'dashboard', roles: [-2] }
     }
+    ]
+  },
+  {
+    path: '/audit',
+    name: '审核管理',
+    component: Layout,
+    alwaysShow: true,
+    meta: { title: '审核管理', icon: 'dashboard', roles: [0, 1] },
+    children: [
+      {
+        path: '/audit/user',
+        name: '用户审核',
+        component: () => import('@/views/master/audit/user-audit/index'),
+        meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1] }
+      },
+      {
+        path: '/audit/car',
+        name: '车辆审核',
+        component: () => import('@/views/master/audit/car-audit/index'),
+        meta: { title: '车辆审核', icon: 'dashboard', roles: [0, 1] }
+      },
+      {
+        path: '/audit/route',
+        name: '路程审核',
+        component: () => import('@/views/master/audit/route-audit/index'),
+        meta: { title: '路程审核', icon: 'dashboard', roles: [0, 1] }
+      },
+      {
+        path: '/audit/reimburse',
+        name: '报销审核',
+        component: () => import('@/views/master/audit/reimburse-audit/index'),
+        meta: { title: '报销审核', icon: 'dashboard', roles: [0, 1] }
+      }
+    ]
+  },
+  {
+    path: '/master/user',
+    name: '用户管理',
+    meta: { roles: [0, 1] },
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/user/index'),
+        meta: { title: '用户管理', icon: 'dashboard', roles: [0, 1] }
+      }
+    ]
+  },
+  {
+    path: '/master/car',
+    name: '车辆管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/car/index'),
+        meta: { title: '车辆管理', icon: 'dashboard', roles: [0, 1] }
+      }
+    ]
+  },
+  {
+    path: '/master/route',
+    name: '路程管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/route/index'),
+        meta: { title: '路程管理', icon: 'dashboard', roles: [0, 1] }
+      }
+    ]
+  },
+  {
+    path: '/master/master',
+    name: '管理员管理',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/master/master/index'),
+        meta: { title: '管理员管理', icon: 'dashboard', roles: [1] }
+      }
     ]
   },
   {
@@ -117,6 +202,43 @@ export const constantRoutes = [
       component: () => import('@/views/contact/index'),
       meta: { title: '企业通讯录', icon: 'dashboard' }
     }]
+  },
+
+  // 404 page must be placed at the end !!!
+  { path: '*', redirect: '/404', hidden: true }
+]
+
+const createRouter = () => new Router({
+  // mode: 'history', // require service support
+  scrollBehavior: () => ({ y: 0 }),
+  routes: constantRoutes
+})
+
+const exampleRoutes = [
+  {
+    path: '/permission',
+    component: Layout,
+    meta: { title: '权限测试', icon: 'dashboard' },
+    name: '权限测试',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/permissiontest/index.vue'),
+        name: '管理员可见',
+        meta: { title: '管理员可见', icon: 'dashboard' } // 页面需要的权限
+      },
+      {
+        path: 'external-link',
+        name: '所有人可见',
+        component: Layout,
+        children: [
+          {
+            path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
+            meta: { title: '所有人可见', icon: 'link' }
+          }
+        ]
+      }
+    ]
   },
   {
     path: '/example',
@@ -222,112 +344,6 @@ export const constantRoutes = [
     ]
   }
 ]
-
-// 异步挂载的路由
-// 动态需要根据权限加载的路由表
-export const asyncRoutes = [
-  {
-    path: '/permission',
-    component: Layout,
-    meta: { title: '权限测试', icon: 'dashboard', roles: [0, 1] },
-    name: '权限测试',
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/permissiontest/index'),
-        name: '管理员可见',
-        meta: { roles: [0, 1], title: '管理员可见', icon: 'dashboard' } // 页面需要的权限
-      },
-      {
-        path: 'external-link',
-        name: '所有人可见',
-        component: Layout,
-        children: [
-          {
-            path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-            meta: { title: '所有人可见', icon: 'link' }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    path: '/audit',
-    name: '审核管理',
-    component: Layout,
-    meta: { title: '审核管理', icon: 'dashboard', roles: [0, 1] },
-    children: [{
-      path: '/audit/user',
-      name: '用户审核',
-      component: () => import('@/views/master/audit/user-audit/index'),
-      meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1] }
-    },
-    {
-      path: '/audit/car',
-      name: '车辆审核',
-      meta: { title: '车辆审核', icon: 'dashboard', roles: [0, 1] }
-    }
-    ]
-  },
-  {
-    path: '/master/user',
-    name: '用户管理',
-    meta: { roles: [0, 1] },
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/master/user/index'),
-        meta: { title: '用户管理', icon: 'dashboard', roles: [0, 1] }
-      }
-    ]
-  },
-  {
-    path: '/master/car',
-    name: '车辆管理',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/master/car/index'),
-        meta: { title: '车辆管理', icon: 'dashboard', roles: [0, 1] }
-      }
-    ]
-  },
-  {
-    path: '/master/route',
-    name: '路程管理',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/master/route/index'),
-        meta: { title: '路程管理', icon: 'dashboard', roles: [0, 1] }
-      }
-    ]
-  },
-  {
-    path: '/master/master',
-    name: '管理员管理',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/master/master/index'),
-        meta: { title: '管理员管理', icon: 'dashboard', roles: [1] }
-      }
-    ]
-  },
-
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
-]
-
-const createRouter = () => new Router({
-  // mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
-})
 
 const router = createRouter()
 

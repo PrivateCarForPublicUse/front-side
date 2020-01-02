@@ -25,38 +25,50 @@
         />
       </el-select>
       <div class="filler-right">
-        <el-button type="primary">
+        <el-button type="primary" @click="applyReimburse">
           申请报销
         </el-button>
       </div>
     </div>
     <el-table
+      ref="rTable"
+      v-loading="listLoading"
       :data="tables.slice((currentPage-1)*pageSize,currentPage*pageSize)"
       style="width: 100%"
       fit
       stripe
       highlight-current-row
+      element-loading-text="Loading"
+      @selection-change="handleSelectionChange"
     >
       <el-table-column type="expand">
         <template slot-scope="scope">
           <div>
             <el-table
-              :data="scope.row.secRoute"
+              :data="scope.row.secModels"
               width="100%"
               class="intable-label"
             >
               <el-table-column label="行驶路程" width="500" align="center">
                 <template slot-scope="scope">
-                  {{ scope.row.origin }}——{{ scope.row.destination }}
+                  {{ scope.row.origin }} -- {{ scope.row.destination }}
                 </template>
               </el-table-column>
               <el-table-column label="历经时间" width="350" align="center">
                 <template slot-scope="scope">
-                  {{ scope.row.carStartTime }}——{{ scope.row.carStopTime }}
+                  {{ scope.row.carStartTime }} -- {{ scope.row.carStopTime }}
                 </template>
               </el-table-column>
-              <el-table-column property="drivingCost" label="行驶长度(km)" align="center" />
-              <el-table-column property="drivingCost" label="费用(元)" align="center" />
+              <el-table-column property="drivingDistance" label="行驶长度(km)" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.drivingDistance | toFixed2 }}
+                </template>
+              </el-table-column>
+              <el-table-column property="drivingCost" label="费用(元)" align="center">
+                <template slot-scope="scope">
+                  {{ scope.row.drivingCost | toFixed2 }}
+                </template>
+              </el-table-column>
             </el-table>
           </div>
         </template>
@@ -77,10 +89,10 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="申请时间" width="180" align="center">
+      <el-table-column label="行程申请时间" width="180" align="center">
         <template slot-scope="scope">
           <i class="el-icon-time" />
-          <span style="margin-left: 10px">{{ scope.row.appleyTime }}</span>
+          <span style="margin-left: 10px">{{ scope.row.applyTime }}</span>
         </template>
       </el-table-column>
       <el-table-column label="申请原因" width="350" align="center">
@@ -90,12 +102,12 @@
       </el-table-column>
       <el-table-column label="行驶总长度(km)" align="center">
         <template slot-scope="scope">
-          {{ scope.row.routeLength }}
+          {{ scope.row.routelength | toFixed2 }}
         </template>
       </el-table-column>
       <el-table-column label="总费用(元)" align="center">
         <template slot-scope="scope">
-          {{ scope.row.cost }}
+          {{ scope.row.cost | toFixed2 }}
         </template>
       </el-table-column>
       <el-table-column label="报销状态" align="center">
@@ -121,6 +133,8 @@
 </template>
 
 <script>
+import { sendReimburseApplication, getMyRouteByDataModel } from '../../api/route'
+
 export default {
   filters: {
     statusFilter(status) {
@@ -140,10 +154,15 @@ export default {
         '2': '审核中'
       }
       return statusMap[status]
+    },
+    toFixed2(data) {
+      return data.toFixed(2)
     }
   },
   data() {
     return {
+      listLoading: false,
+      multipleSelection: [],
       checkAll: false,
       isIndeterminate: false,
       pageSize: 10,
@@ -232,10 +251,50 @@ export default {
       this.$set(item, 'checked', false)
       return item
     })
+    this.fetchDataList()
   },
   methods: {
     fetchDataList() {
-      // todo
+      this.listLoading = true
+      getMyRouteByDataModel().then(response => {
+        if (response.code === 200) {
+          this.datalist = response.data
+          this.listLoading = false
+        }
+      })
+    },
+    handleSelectionChange(val) {
+      // 选中多选框
+      this.multipleSelection = val
+      console.log('jjj')
+      console.log(val)
+    },
+    applyReimburse() {
+      // 申请报销
+      let rList = []
+      this.tables.forEach(item => {
+        if (item.checked) {
+          rList.push(item.routId)
+        }
+      })
+      console.log(rList)
+      if (rList.length === 0) return
+      sendReimburseApplication({ ids: rList }).then(res => {
+        if (res.code === 200) {
+          this.$message({
+            message: '申请成功！',
+            type: 'success',
+            showClose: true
+          })
+          this.tables.forEach(item => {
+            rList.forEach(r => {
+              if (item.routId === r) {
+                item.isReimburse = 2
+              }
+            })
+          })
+        }
+      })
     },
     handleCurrentChange(val) {
       this.currentPage = val

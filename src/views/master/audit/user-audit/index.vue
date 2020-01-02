@@ -148,7 +148,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getAuditUsers({status: 0}).then(response => {
+      getAuditUsers({ status: 0 }).then(response => {
         this.list = response.data
         this.listLoading = false
       })
