@@ -11,11 +11,9 @@
         :active-text-color="variables.menuActiveText"
         :collapse-transition="false"
         mode="vertical"
-        style="margin-top:50px"
+        style="margin-top:10px"
       >
-        <sidebar-item :item="aaa" style="font-size:22px">
-          私车公用aaa
-        </sidebar-item>
+<!--        <sidebar-item :item="aaa" style="font-size:22px">私车公用aaa</sidebar-item>-->
         <sidebar-item v-for="route in routes" :key="route.path" :item="route" :base-path="route.path" />
       </el-menu>
     </el-scrollbar>

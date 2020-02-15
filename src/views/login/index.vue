@@ -41,12 +41,14 @@
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button :loading="loading" type="primary" style="width:70%;margin-bottom:30px;" @click.native.prevent="handleLogin">用户登录</el-button>
+      <el-button type="primary" style="width:25%;right:0;margin-left:16px" @click.native.prevent="handleRegister">用户注册</el-button>
 
       <el-form-item
-        style="border: none;background-color: rgba(0,0,0,0);margin-left: 110px"
+        style="border: none;background-color: rgba(0,0,0,0);margin-left:110px"
       >
         <template>
+<!--          <el-button type="primary" size="mini" style="margin-right:50px">用户注册</el-button>-->
           <el-radio v-model="radio" label="1" @change="testRadioChange()">用户登录</el-radio>
           <el-radio v-model="radio" label="2" @change="testRadioChange()">管理员登陆</el-radio>
         </template>
@@ -144,6 +146,9 @@ export default {
           return false
         }
       })
+    },
+    handleRegister() {
+      this.$router.push('/register')
     },
     testRadioChange: function() {
       console.log(this.radio)

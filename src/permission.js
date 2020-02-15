@@ -8,7 +8,7 @@ import getPageTitle from '@/utils/get-page-title'
 
 NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
-const whiteList = ['/login'] // no redirect whitelist
+const whiteList = ['/login', '/register'] // no redirect whitelist
 
 router.beforeEach(async(to, from, next) => {
   // start progress bar
@@ -23,7 +23,12 @@ router.beforeEach(async(to, from, next) => {
   if (hasToken) {
     if (to.path === '/login') {
       // if is logged in, redirect to the home page
-      next({ path: '/' })
+      let { isCompanyMaster } = await store.dispatch('user/getInfo')
+      if (isCompanyMaster === 0 || isCompanyMaster === 1)next({ path: '/audit/user' })
+      else next({ path: '/' })
+      NProgress.done()
+    } else if (to.path === '/register') {
+      next({ path: '/register' })
       NProgress.done()
     } else {
       // determine whether the user has obtained his permission roles through getInfo

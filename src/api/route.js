@@ -70,3 +70,21 @@ export function sendReimburseApplication(data) {
     data
   })
 }
+// 报销审核通过
+export function acceptReimburse(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/reviewReimburse/',
+    method: 'post',
+    data
+  })
+}
+// 报销审核失败
+export function rejectReimburse(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/reviewReimburse/reject',
+    method: 'post',
+    data
+  })
+}

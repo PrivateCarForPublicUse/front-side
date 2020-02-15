@@ -37,11 +37,27 @@ export const constantRoutes = [
     component: () => import('@/views/login/index'),
     hidden: true
   },
+  {
+    path: '/register',
+    component: () => import('@/views/login/register'),
+    hidden: true
+  },
 
   {
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
+  },
+  {
+    path: '/test',
+    component: Layout,
+    redirect: '/test',
+    children: [{
+      path: 'test',
+      name: 'test',
+      component: () => import('@/views/test/index'),
+      meta: { title: '测试', icon: 'dashboard' }
+    }]
   }
 ]
 // 异步挂载的路由
