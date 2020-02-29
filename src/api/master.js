@@ -19,3 +19,11 @@ export function updateMaster(params) {
     data: params
   })
 }
+
+export function getToReviewNum() {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/Master/to-review-num',
+    method: 'get'
+  })
+}

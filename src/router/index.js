@@ -113,17 +113,23 @@ export const asyncRoutes = [
     redirect: '/mycar/carinfo',
     name: 'mycar',
     meta: { title: '我的车辆', icon: 'dashboard', roles: [-2] },
-    children: [{
-      path: 'carinfo',
-      name: 'Carinfo',
-      component: () => import('@/views/mycar/carinfo/index'),
-      meta: { title: '车辆信息', icon: 'dashboard', roles: [-2] }
-    }, {
-      path: 'carroute',
-      name: 'carroute',
-      component: () => import('@/views/mycar/carroute/index'),
-      meta: { title: '车辆行程', icon: 'dashboard', roles: [-2] }
-    }
+    children: [
+      {
+        path: 'carregister',
+        name: 'carregister',
+        component: () => import('@/views/mycar/carregister/index'),
+        meta: { title: '车辆注册', icon: 'dashboard', roles: [-2] }
+      }, {
+        path: 'carinfo',
+        name: 'Carinfo',
+        component: () => import('@/views/mycar/carinfo/index'),
+        meta: { title: '车辆信息', icon: 'dashboard', roles: [-2] }
+      }, {
+        path: 'carroute',
+        name: 'carroute',
+        component: () => import('@/views/mycar/carroute/index'),
+        meta: { title: '车辆行程', icon: 'dashboard', roles: [-2] }
+      }
     ]
   },
   {
@@ -137,7 +143,7 @@ export const asyncRoutes = [
         path: '/audit/user',
         name: '用户审核',
         component: () => import('@/views/master/audit/user-audit/index'),
-        meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1] }
+        meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1], tag: true }
       },
       {
         path: '/audit/car',

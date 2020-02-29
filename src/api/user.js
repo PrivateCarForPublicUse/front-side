@@ -73,3 +73,13 @@ export function getAuditUsers(params) {
     params
   })
 }
+
+// 用户注册
+export function userRegister(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/register',
+    method: 'post',
+    data
+  })
+}
