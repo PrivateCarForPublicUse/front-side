@@ -83,3 +83,21 @@ export function userRegister(data) {
     data
   })
 }
+
+// 获取当前公司的用户
+export function getUsersInCompany() {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/Master/users',
+    method: 'get'
+  })
+}
+
+// 根据用户id获取用户信息
+export function getUserById(id) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/' + id,
+    method: 'get'
+  })
+}

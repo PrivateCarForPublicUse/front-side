@@ -74,7 +74,8 @@ export default {
     }
   },
   created() {
-    this.timer = setInterval(this.fun, 1000)
+    this.fun()
+    // this.timer = setInterval(this.fun, 1000)
   },
   beforeDestroy() {
     clearInterval(this.timer)

@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import { getAllUsers, updateUser } from '@/api/user'
+import { updateUser, getUsersInCompany } from '@/api/user'
 import { getIndex } from '@/utils/index'
 
 export default {
@@ -125,7 +125,7 @@ export default {
   methods: {
     fetchData() {
       this.listLoading = true
-      getAllUsers().then(response => {
+      getUsersInCompany().then(response => {
         this.list = response.data
         this.listLoading = false
       })

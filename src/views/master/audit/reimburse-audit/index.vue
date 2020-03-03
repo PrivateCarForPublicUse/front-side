@@ -161,8 +161,9 @@ export default {
       },
       valiForm: {
         name: ''
-      }
-
+      },
+      editFormRules: {},
+      editLoading: false
     }
   },
   computed: {

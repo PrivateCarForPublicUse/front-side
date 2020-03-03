@@ -133,6 +133,25 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/myinfo',
+    component: Layout,
+    redirect: '/useraccount',
+    alwaysShow: true,
+    meta: { title: '我的信息', icon: 'dashboard', roles: [-2] },
+    children: [{
+      path: '/useraccount',
+      name: '我的信息',
+      component: () => import('@/views/account/index'),
+      meta: { title: '基本资料', icon: 'dashboard', roles: [-2] }
+    },
+    {
+      path: '/changePassword',
+      name: '修改密码',
+      component: () => import('@/views/account/changePassword'),
+      meta: { title: '修改密码', icon: 'dashboard', roles: [-2] }
+    }]
+  },
+  {
     path: '/audit',
     name: '审核管理',
     component: Layout,

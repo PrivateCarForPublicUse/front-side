@@ -44,3 +44,12 @@ export function getAuditCars(params) {
     method: 'get'
   })
 }
+
+// 根据id获取车辆信息
+export function getCarInfoById(id) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/car/id/' + id,
+    method: 'get'
+  })
+}

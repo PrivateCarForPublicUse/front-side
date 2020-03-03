@@ -76,19 +76,29 @@
       <el-table-column prop="endTime" label="预约-结束时间" />
       <el-table-column prop="displacement" label="耗油量" />
       <el-table-column prop="starOfCar" label="星级评分" />
+      <el-table-column label="操作">
+        <template scope="scope">
+          <el-button size="mini" @click="handleEdit(scope.$index,scope.row)">详情</el-button>
+        </template>
+      </el-table-column>
       <!--      <el-table-column label="操作">-->
       <!--        <template>-->
       <!--          <el-button type="primary" size="small">选择车辆</el-button>-->
       <!--        </template>-->
       <!--      </el-table-column>-->
     </el-table>
+    <el-dialog :visible.sync="editFormVisible" title="车辆信息">
+      <CarInfo :car-id="editForm.id" :edit-form="editForm" :picture="editForm.picture | fileListFilter" :driving-license-img="editForm.drivingLicenseUrl | fileListFilter" />
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getMyCarInfo } from '@/api/car'
+import CarInfo from './carInfo'
 
 export default {
+  components: { CarInfo },
   filters: {
     isPublicFilter(status) {
       const statusMap = {
@@ -121,6 +131,10 @@ export default {
         '2': '使用中'
       }
       return statusMap[status]
+    },
+    fileListFilter(fileList) {
+      const urlPrefix = process.env.VUE_APP_IMG_API + '/'
+      return [{ name: '车辆行驶证', url: urlPrefix + fileList, status: 'ready' }]
     }
   },
   data() {
@@ -134,7 +148,10 @@ export default {
       searchType: ['车型', '星级高于', '品牌'],
       list: [{ name: 'a', star: '4' }, { name: 'b', star: '5' }],
       listLoading: false,
-      carList: null
+      carList: null,
+      editFormVisible: false,
+      editForm: { id: 0, picture: null, drivingLicenseUrl: null },
+      editFormIndex: 0
     }
   },
   created() {
@@ -147,6 +164,12 @@ export default {
         this.carList = response.data
         this.listLoading = false
       })
+    },
+    handleEdit(index, row) {
+      this.editForm = Object.assign({}, row)
+      console.log(this.editForm)
+      this.editFormVisible = true
+      this.editFormIndex = index
     }
   }
 }
