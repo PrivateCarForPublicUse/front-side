@@ -65,13 +65,13 @@
       <!--          {{ scope.row.startTime }}——{{ scope.row.endTime }}-->
       <!--        </template>-->
       <!--      </el-table-column>-->
-      <el-table-column label="行程路径" width="400" :show-overflow-tooltip="true">
+      <el-table-column label="行程路径" width="200" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <!--          {{ scope.row | routePathFilter }}-->
           {{ scope.row.routesName }}
         </template>
       </el-table-column>
-      <el-table-column label="申请原因" width="500" align="center">
+      <el-table-column label="申请原因" width="200" align="center">
         <template slot-scope="scope">
           {{ scope.row.route.reason }}
         </template>
@@ -81,7 +81,8 @@
           <el-tag
             size="medium"
             :type="scope.row.route.status | statusFilter"
-          >{{ scope.row.route.status | statusWordsFilter }}</el-tag>
+          >{{ scope.row.route.status | statusWordsFilter }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="报销状态">
@@ -89,7 +90,13 @@
           <el-tag
             size="medium"
             :type="scope.row.route.isReimburse | reimburseFilter"
-          >{{ scope.row.route.isReimburse | reimburseWordsFilter }}</el-tag>
+          >{{ scope.row.route.isReimburse | reimburseWordsFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="对使用者评价">
+        <template slot-scope="scope">
+          <el-button type="primary" size="mini" @click="comment(scope.$index,scope.row)">评价</el-button>
         </template>
       </el-table-column>
       <!--      <el-table-column label="操作" align="center">-->
@@ -114,10 +121,20 @@
         @current-change="handleCurrentChange"
       />
     </div>
+    <el-dialog :visible.sync="editFormVisible" title="对借车人的评价">
+      <hr style="height:0;border-top-width:0">
+      <MyUserComment :form="myCommentForm" :evaluatee-id="evaluateeId" />
+      <hr style="height:0;border-top-width:0">
+      <UserComment v-for="data in userRates" :key="data.userRate.id" :data="data" />
+    </el-dialog>
   </div>
 </template>
 <script>
 import { getMyCarRouteByRouteModel } from '@/api/route'
+import MyUserComment from '../../comment/MyUserComment'
+import UserComment from '../../comment/UserComment'
+import { getUserRate } from '../../../api/comment'
+import store from '@/store'
 
 export default {
   filters: {
@@ -171,8 +188,19 @@ export default {
       return route.join(' -> ')
     }
   },
+  components: {
+    MyUserComment,
+    UserComment
+  },
   data() {
     return {
+      editFormVisible: false,
+      myCommentForm: {
+        ok: false,
+        evaluateeId: 0
+      },
+      evaluateeId: 0,
+      userRates: null,
       pageSize: 10,
       currentPage: 1,
       search: '',
@@ -187,9 +215,24 @@ export default {
           startTime: '2029-11-11 12:12:12',
           endTime: '2029-11-11 12:12:12',
           secRoute: [{
-            id: '1', routeId: '0', origin: '浙江大学软件学院', destination: '宁波站（火车站）', carStartTime: '2019-12-12 12:00:00', carStopTime: '2019-12-12 12:00:00', drivingDistance: 20, drivingCost: 20
+            id: '1',
+            routeId: '0',
+            origin: '浙江大学软件学院',
+            destination: '宁波站（火车站）',
+            carStartTime: '2019-12-12 12:00:00',
+            carStopTime: '2019-12-12 12:00:00',
+            drivingDistance: 20,
+            drivingCost: 20
           }, {
-            id: '2', routeId: '0', origin: '浙江大学软件学院', destination: '宁波站（火车站）', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20 }],
+            id: '2',
+            routeId: '0',
+            origin: '浙江大学软件学院',
+            destination: '宁波站（火车站）',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
+          }],
           settlement: [{
             id: 1, carStartTime: 'string', carStopTime: 'string', drivingDistance: 20
           }, {
@@ -206,11 +249,31 @@ export default {
           startTime: '2029-11-11 12:12:12',
           endTime: '2029-11-11 12:12:12',
           secRoute: [{
-            id: 1, origin: '浙江大学软件学院', destination: '宁波站（火车站）', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20
+            id: 1,
+            origin: '浙江大学软件学院',
+            destination: '宁波站（火车站）',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
           }, {
-            id: 2, origin: '宁波站（火车站）', destination: '浙江大学软件学院', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20 },
+            id: 2,
+            origin: '宁波站（火车站）',
+            destination: '浙江大学软件学院',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
+          },
           {
-            id: 2, origin: '宁波站（火车站）', destination: '浙江大学软件学院', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20 }],
+            id: 2,
+            origin: '宁波站（火车站）',
+            destination: '浙江大学软件学院',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
+          }],
           settlement: [{
             id: 1, carStartTime: 'string', carStopTime: 'string', drivingDistance: 20
           }, {
@@ -280,14 +343,15 @@ export default {
         if (response.code === 200) {
           this.datalist = response.data
           this.datalist.forEach(data => {
+            console.log(data)
             data.filledRoutes = this.fillingRoutes(data.secRoutesModel)
             data.routesName = this.fillingRoutesName(data.secRoutesModel)
             data.carInfo = data.car.band + '-' + data.car.type + ' | ' + data.car.license
           })
           this.datalistOld = this.datalist
-          this.listLoading = false
         }
       })
+      this.listLoading = false
     },
     chooseTypeFun(val) {
       this.datalist = this.datalistOld.filter((item) => {
@@ -296,7 +360,9 @@ export default {
     },
     textChangeFun(val) {
       this.datalist = this.datalistOld.filter((dataNews) => {
-        if (dataNews.routesName && String(dataNews['routesName']).indexOf(val) > -1) { return true }
+        if (dataNews.routesName && String(dataNews['routesName']).indexOf(val) > -1) {
+          return true
+        }
         return Object.keys(dataNews.route).some((key) => {
           return String(dataNews.route[key]).toLowerCase().indexOf(val) > -1
         })
@@ -336,6 +402,24 @@ export default {
         }
       }
       return name.join(' -> ')
+    },
+    comment(index, row) {
+      // 获取评论
+      getUserRate(row.route.userId).then(response2 => {
+        let userId = Number(store.getters.userId)
+        this.userRates = response2.data
+        this.userRates.forEach(v => {
+          v.user.headPhotoUrl = process.env.VUE_APP_IMG_API + '/' + v.user.headPhotoUrl
+          if (Number(v.user.id) === userId) {
+            this.myCommentForm = v.userRate
+            this.myCommentForm.evaluateeId = v.evaluateeId
+            this.myCommentForm.ok = true
+          }
+        })
+        // this.myCommentForm.evaluateeId = row.userRate.evaluateeId
+        this.evaluateeId = row.route.userId
+        this.editFormVisible = true
+      })
     }
   }
 }
@@ -345,27 +429,33 @@ export default {
     margin-bottom: 20px;
     margin-left: 25px;
   }
+
   .input-text {
     width: 300px;
   }
+
   .filler-right {
     float: right;
   }
+
   .demo-table-expand >>> label {
     margin-left: 20px;
     width: 90px;
     color: #99a9bf;
   }
+
   .demo-table-expand .el-form-item {
     margin-right: 0;
     margin-bottom: 0;
-    width:60%;
+    width: 60%;
   }
+
   .form-title {
     font-weight: bolder;
     margin-bottom: 10px;
   }
-  .bos{
+
+  .bos {
     text-align: center;
   }
 </style>

@@ -35,7 +35,6 @@ import { isExternal } from '@/utils/validate'
 import Item from './Item'
 import AppLink from './Link'
 import FixiOSBug from './FixiOSBug'
-import store from '@/store'
 
 export default {
   name: 'SidebarItem',

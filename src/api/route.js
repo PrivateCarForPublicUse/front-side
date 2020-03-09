@@ -57,7 +57,7 @@ export function getMyRouteByRouteModel() {
 export function getMyCarRouteByRouteModel() {
   return request({
     baseURL: process.env.VUE_APP_BASE_API2,
-    url: '/Route/my-car-route',
+    url: '/Route/my-car-route-origin',
     method: 'get'
   })
 }

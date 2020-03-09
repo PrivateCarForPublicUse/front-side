@@ -63,14 +63,14 @@
       <!--          {{ scope.row.startTime }}——{{ scope.row.endTime }}-->
       <!--        </template>-->
       <!--      </el-table-column>-->
-      <el-table-column label="行程路径" width="400" :show-overflow-tooltip="true">
+      <el-table-column label="行程路径" width="300" :show-overflow-tooltip="true">
         <template slot-scope="scope">
           <!--          {{ scope.row | routePathFilter }}-->
           {{ scope.row.routesName }}
         </template>
       </el-table-column>
       <el-table-column label="申请车辆" width="200" prop="carInfo" />
-      <el-table-column label="申请原因" width="500" align="center">
+      <el-table-column label="申请原因" width="200" align="center">
         <template slot-scope="scope">
           {{ scope.row.route.reason }}
         </template>
@@ -80,7 +80,8 @@
           <el-tag
             size="medium"
             :type="scope.row.route.status | statusFilter"
-          >{{ scope.row.route.status | statusWordsFilter }}</el-tag>
+          >{{ scope.row.route.status | statusWordsFilter }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="报销状态">
@@ -88,7 +89,13 @@
           <el-tag
             size="medium"
             :type="scope.row.route.isReimburse | reimburseFilter"
-          >{{ scope.row.route.isReimburse | reimburseWordsFilter }}</el-tag>
+          >{{ scope.row.route.isReimburse | reimburseWordsFilter }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作">
+        <template slot-scope="scope">
+          <el-button type="primary" size="mini" @click="comment(scope.$index,scope.row)">评价</el-button>
         </template>
       </el-table-column>
       <!--      <el-table-column label="操作" align="center">-->
@@ -113,10 +120,29 @@
         @current-change="handleCurrentChange"
       />
     </div>
+    <el-dialog :visible.sync="editFormVisible" title="车辆信息">
+      <hr style="height:0;border-top-width:0">
+      <MyCarComment :form="myCommentForm" :car-id="editForm.id" />
+      <hr style="height:0;border-top-width:0">
+      <CarComment v-for="data in carRates" :key="data.carRate.id" :data="data" />
+      <CarInfo
+        :modify="false"
+        :car-id="editForm.id"
+        :edit-form="editForm"
+        :picture="editForm.picture | fileListFilter"
+        :driving-license-img="editForm.drivingLicenseUrl | fileListFilter"
+      />
+    </el-dialog>
   </div>
 </template>
 <script>
 import { getMyRouteByRouteModel } from '../../api/route'
+import CarInfo from '../mycar/carinfo/carInfo'
+import MyCarComment from '../comment/MyCarComment'
+import { getCarInfoById } from '../../api/car'
+import CarComment from '../comment/CarComment'
+import { getCarRate } from '../../api/comment'
+import store from '@/store'
 
 export default {
   filters: {
@@ -168,7 +194,16 @@ export default {
         route.push(r.secRoute.destination)
       })
       return route.join(' -> ')
+    },
+    fileListFilter(fileList) {
+      let urlPrefix = process.env.VUE_APP_IMG_API + '/'
+      return [{ name: '车辆行驶证', url: urlPrefix + fileList }]
     }
+  },
+  components: {
+    MyCarComment,
+    CarInfo,
+    CarComment
   },
   data() {
     return {
@@ -186,9 +221,24 @@ export default {
           startTime: '2029-11-11 12:12:12',
           endTime: '2029-11-11 12:12:12',
           secRoute: [{
-            id: '1', routeId: '0', origin: '浙江大学软件学院', destination: '宁波站（火车站）', carStartTime: '2019-12-12 12:00:00', carStopTime: '2019-12-12 12:00:00', drivingDistance: 20, drivingCost: 20
+            id: '1',
+            routeId: '0',
+            origin: '浙江大学软件学院',
+            destination: '宁波站（火车站）',
+            carStartTime: '2019-12-12 12:00:00',
+            carStopTime: '2019-12-12 12:00:00',
+            drivingDistance: 20,
+            drivingCost: 20
           }, {
-            id: '2', routeId: '0', origin: '浙江大学软件学院', destination: '宁波站（火车站）', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20 }],
+            id: '2',
+            routeId: '0',
+            origin: '浙江大学软件学院',
+            destination: '宁波站（火车站）',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
+          }],
           settlement: [{
             id: 1, carStartTime: 'string', carStopTime: 'string', drivingDistance: 20
           }, {
@@ -205,11 +255,31 @@ export default {
           startTime: '2029-11-11 12:12:12',
           endTime: '2029-11-11 12:12:12',
           secRoute: [{
-            id: 1, origin: '浙江大学软件学院', destination: '宁波站（火车站）', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20
+            id: 1,
+            origin: '浙江大学软件学院',
+            destination: '宁波站（火车站）',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
           }, {
-            id: 2, origin: '宁波站（火车站）', destination: '浙江大学软件学院', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20 },
+            id: 2,
+            origin: '宁波站（火车站）',
+            destination: '浙江大学软件学院',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
+          },
           {
-            id: 2, origin: '宁波站（火车站）', destination: '浙江大学软件学院', carStartTime: 'string', carStopTime: 'string', drivingDistance: 20, drivingCost: 20 }],
+            id: 2,
+            origin: '宁波站（火车站）',
+            destination: '浙江大学软件学院',
+            carStartTime: 'string',
+            carStopTime: 'string',
+            drivingDistance: 20,
+            drivingCost: 20
+          }],
           settlement: [{
             id: 1, carStartTime: 'string', carStopTime: 'string', drivingDistance: 20
           }, {
@@ -248,7 +318,12 @@ export default {
           value: '4',
           label: '取消'
         }
-      ]
+      ],
+      // 编辑页面
+      myCommentForm: { rate: 0, comment: '', ok: false },
+      editForm: { id: null, picture: null, drivingLicenseUrl: null },
+      editFormVisible: false,
+      carRates: null
     }
   },
   computed: {
@@ -295,7 +370,9 @@ export default {
     },
     textChangeFun(val) {
       this.datalist = this.datalistOld.filter((dataNews) => {
-        if (dataNews.routesName && String(dataNews['routesName']).indexOf(val) > -1) { return true }
+        if (dataNews.routesName && String(dataNews['routesName']).indexOf(val) > -1) {
+          return true
+        }
         return Object.keys(dataNews.route).some((key) => {
           return String(dataNews.route[key]).toLowerCase().indexOf(val) > -1
         })
@@ -335,36 +412,78 @@ export default {
         }
       }
       return name.join(' -> ')
+    },
+    comment(index, row) {
+      // 车辆详情+评价页面
+      getCarInfoById(row.route.carId).then(response => {
+        if (response.code !== 200) {
+          this.$message({
+            showClose: true,
+            message: response.message,
+            type: 'danger'
+          })
+          return
+        }
+        // 获取评论
+        getCarRate(row.route.carId).then(response2 => {
+          if (response2.code !== 200) {
+            this.$message({
+              showClose: true,
+              message: response2.message,
+              type: 'danger'
+            })
+            return
+          }
+          let userId = Number(store.getters.userId)
+          this.carRates = response2.data
+          this.carRates.forEach(v => {
+            v.user.headPhotoUrl = process.env.VUE_APP_IMG_API + '/' + v.user.headPhotoUrl
+            if (Number(v.user.id) === userId) {
+              this.myCommentForm = v.carRate
+              this.myCommentForm.ok = true
+            }
+          })
+          this.editForm = response.data
+          this.myCommentForm.carId = this.editForm.id
+          this.editFormVisible = true
+        })
+      })
     }
   }
 }
 </script>
 <style scoped>
-.filter-container {
-  margin-bottom: 20px;
-  margin-left: 25px;
-}
-.input-text {
-  width: 300px;
-}
-.filler-right {
-  float: right;
-}
-.demo-table-expand >>> label {
-  margin-left: 20px;
-  width: 90px;
-  color: #99a9bf;
-}
-.demo-table-expand .el-form-item {
-  margin-right: 0;
-  margin-bottom: 0;
-  width:60%;
-}
-.form-title {
-  font-weight: bolder;
-  margin-bottom: 10px;
-}
-.bos{
-  text-align: center;
-}
+  .filter-container {
+    margin-bottom: 20px;
+    margin-left: 25px;
+  }
+
+  .input-text {
+    width: 300px;
+  }
+
+  .filler-right {
+    float: right;
+  }
+
+  .demo-table-expand >>> label {
+    margin-left: 20px;
+    width: 90px;
+    color: #99a9bf;
+  }
+
+  .demo-table-expand .el-form-item {
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 60%;
+  }
+
+  .form-title {
+    font-weight: bolder;
+    margin-bottom: 10px;
+  }
+
+  .bos {
+    text-align: center;
+  }
 </style>

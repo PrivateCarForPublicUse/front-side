@@ -1,6 +1,5 @@
 <template>
-  <div class="app-container">
-    <h2>车辆注册</h2>
+  <div>
     <el-form ref="form" :model="editForm" :rules="rules" label-width="120px">
       <el-row>
         <el-col :span="24">
@@ -68,7 +67,7 @@
           <el-form-item label="车辆排放量" prop="displacement">
             <el-input v-model="editForm.displacement" :readonly="readOnly" />
           </el-form-item>
-          <el-button type="primary" style="margin-left: 120px" @click="upload">提交修改</el-button>
+          <el-button v-show="modify" type="primary" style="margin-left: 120px" @click="upload">提交修改</el-button>
         </el-col>
       </el-row>
     </el-form>
@@ -77,9 +76,7 @@
 
 <script>
 
-import axios from 'axios'
 import '@/utils/data-format.js'
-import { getCarInfoById } from '../../../api/car'
 
 export default {
   name: 'CarInfo',
@@ -97,7 +94,12 @@ export default {
     // eslint-disable-next-line vue/require-default-prop
     picture: String,
     // eslint-disable-next-line vue/require-default-prop
-    drivingLicenseImg: String
+    drivingLicenseImg: String,
+    modify: {
+      required: false,
+      default: true,
+      type: Boolean
+    }
   },
   data() {
     return {

@@ -101,3 +101,13 @@ export function getUserById(id) {
     method: 'get'
   })
 }
+
+// 用户修改密码
+export function userChangePassword(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/change-password',
+    method: 'post',
+    data
+  })
+}
