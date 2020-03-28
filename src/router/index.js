@@ -248,7 +248,7 @@ export const asyncRoutes = [
     path: '/master/overview',
     component: { default: Layout, highcharts: Chart },
     redirect: '/master/overview/company',
-    meta: { title: '总览', icon: 'dashboard' },
+    meta: { title: '总览', icon: 'dashboard', roles: [0, 1] },
     children: [{
       path: 'index',
       name: 'company',
