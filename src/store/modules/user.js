@@ -6,7 +6,8 @@ const state = {
   token: getToken(),
   name: '',
   avatar: '',
-  roles: -1
+  roles: -1,
+  userId: -1
 }
 
 const mutations = {
@@ -21,6 +22,9 @@ const mutations = {
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
+  },
+  SET_USER_ID: (state, userId) => {
+    state.userId = userId
   }
 }
 
@@ -87,6 +91,7 @@ const actions = {
         }
         commit('SET_ROLES', isCompanyMaster)
         commit('SET_NAME', name)
+        commit('SET_USER_ID', data.userId)
         commit('SET_AVATAR', 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif')
         resolve(data)
       }).catch(error => {
@@ -101,6 +106,7 @@ const actions = {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', -1)
+        commit('SET_USER_ID', -1)
         removeToken()
         resetRouter()
         resolve()
@@ -115,6 +121,7 @@ const actions = {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
       commit('SET_ROLES', -1)
+      commit('SET_USER_ID', -1)
       removeToken()
       resolve()
     })

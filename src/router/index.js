@@ -5,6 +5,7 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
+import { Chart } from 'highcharts-vue'
 import constant from 'vue-amap/src/lib/utils/constant'
 
 /**
@@ -201,6 +202,26 @@ export const asyncRoutes = [
       name: 'contact',
       component: () => import('@/views/contact/index'),
       meta: { title: '企业通讯录', icon: 'dashboard' }
+    }]
+  }, {
+    path: '/master/overview',
+    component: { default: Layout, highcharts: Chart },
+    redirect: '/master/overview/company',
+    meta: { title: '总览', icon: 'dashboard' },
+    children: [{
+      path: 'index',
+      name: 'company',
+      component: () => import('@/views/master/overview/company'),
+      meta: { title: '公司总览', icon: 'dashboard' }
+    }, {
+      path: 'index',
+      name: 'employee',
+      component: () => import('@/views/master/overview/employee'),
+      meta: { title: '员工总览', icon: 'dashboard' }
+    }, {
+      path: 'employee/details/:id',
+      name: 'details',
+      component: () => import('@/views/master/overview/details')
     }]
   },
 
