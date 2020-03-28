@@ -57,7 +57,7 @@ export function getMyRouteByRouteModel() {
 export function getMyCarRouteByRouteModel() {
   return request({
     baseURL: process.env.VUE_APP_BASE_API2,
-    url: '/Route/my-car-route',
+    url: '/Route/my-car-route-origin',
     method: 'get'
   })
 }
@@ -67,6 +67,24 @@ export function sendReimburseApplication(data) {
     baseURL: process.env.VUE_APP_BASE_API2,
     url: '/Route/applyReimburse',
     method: 'put',
+    data
+  })
+}
+// 报销审核通过
+export function acceptReimburse(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/reviewReimburse/',
+    method: 'post',
+    data
+  })
+}
+// 报销审核失败
+export function rejectReimburse(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/reviewReimburse/reject',
+    method: 'post',
     data
   })
 }

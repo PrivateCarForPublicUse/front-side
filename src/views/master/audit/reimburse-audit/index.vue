@@ -27,9 +27,11 @@
       </el-table-column>
       <el-table-column label="操作">
         <template scope="scope">
-          <el-button size="mini" @click="auditPass(scope.$index,scope.row,1)">审核通过</el-button>
-          <el-button size="mini" @click="auditPass(scope.$index,scope.row,2)">撤销审核</el-button>
-          <el-button size="mini" @click="auditPass(scope.$index,scope.row,-1)">审核不通过</el-button>
+          <el-button size="mini" @click="acceptReimburse(scope.$index,scope.row)">审核通过</el-button>
+          <el-button size="mini" @click="rejectReimburseDialog(scope.row)">审核不通过</el-button>
+          <!--          <el-button size="mini" @click="auditPass(scope.$index,scope.row,1)">审核通过</el-button>-->
+          <!--          <el-button size="mini" @click="auditPass(scope.$index,scope.row,2)">撤销审核</el-button>-->
+          <!--          <el-button size="mini" @click="auditPass(scope.$index,scope.row,-1)">审核不通过</el-button>-->
         </template>
       </el-table-column>
     </el-table>
@@ -51,7 +53,7 @@
       </div>
     </el-dialog>
     <el-dialog :visible.sync="editFormVisible" title="编辑" :close-on-click-modal="false">
-      <el-form ref="editForm" :model="editForm" label-width="80px" :rules="editFormRules">
+      <el-form ref="editForm" :model="editForm" label-width="80px">
         <el-form-item label="开始时间">
           <el-input v-model="editForm.applyStartTime" auto-complete="off" />
         </el-form-item>
@@ -76,12 +78,25 @@
         <el-button type="primary" :loading="editLoading" @click.native="editSubmit">提交</el-button>
       </div>
     </el-dialog>
+    <!--    反馈审核失败消息的对话框-->
+    <el-dialog title="审核失败反馈信息" :visible.sync="rejectDialogVisible">
+      <el-form ref="rejectForm" :model="rejectForm" :inline="true" :rules="rules">
+        <el-form-item label="反馈信息" :label-width="100" prop="rejectMessage">
+          <el-input v-model="rejectForm.rejectMessage" autocomplete="off" />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="rejectReimburse(rejectForm.row,rejectForm.rejectMessage)">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getAuditRoutes, getAllRoutes, updateRoute } from '@/api/route'
 import { getReimburseRoutes } from '@/api/route'
+import { acceptReimburse, rejectReimburse } from '../../../../api/route'
 
 export default {
   name: 'Index',
@@ -107,6 +122,18 @@ export default {
     }
   },
   data() {
+    function sleep1(ms, callback) {
+      setTimeout(callback, ms)
+    }
+    let messageRule = (rule, value, callback) => {
+      console.log('hhhhh')
+      console.log('***' + value)
+      if (value === '' || value === null) {
+        callback(new Error('出发地不能为空'))
+      } else {
+        callback()
+      }
+    }
     return {
       currentPage: 1,
       pageSize: 10,
@@ -116,7 +143,27 @@ export default {
       editFormIndex: 0,
       editForm: {
       },
-      deleteFormVisible: false
+      deleteFormVisible: false,
+      rejectDialogVisible: false,
+      rejectForm: {
+        reviewReimburse: '',
+        rejectMessage: '',
+        row: {}
+      },
+      rules: {
+        rejectMessage: [
+          { required: true, message: '请输入信息', trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: '请输入名称', trigger: 'blur' },
+          { min: 5, max: 10, message: '长度在 5 到 10 个字符', trigger: 'blur' }
+        ]
+      },
+      valiForm: {
+        name: ''
+      },
+      editFormRules: {},
+      editLoading: false
     }
   },
   computed: {
@@ -155,6 +202,55 @@ export default {
         this.listLoading = false
       })
     },
+    acceptReimburse(index, row) {
+      // 审核通过
+      acceptReimburse({ routeId: row.route.id }).then(response => {
+        if (response.code === 200) {
+          // 审核通过，设置为 1
+          row.route.isReimburse = 1
+          this.$message({
+            message: '处理成功！',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: response.message,
+            type: 'danger'
+          })
+        }
+      })
+    },
+    rejectReimburseDialog(row) {
+      // 拒绝报销的dialog
+      this.rejectForm.rejectMessage = ''
+      this.rejectForm.row = row
+      this.rejectDialogVisible = true
+    },
+    rejectReimburse(row, message) {
+      // 拒绝审核
+      this.$refs['rejectForm'].validate((valid) => {
+        if (valid) {
+          rejectReimburse({ routeId: row.route.id, message: message }).then(response => {
+            if (response.code === 200) {
+              row.route.isReimburse = -1
+              this.$message({
+                message: '处理成功！',
+                type: 'success'
+              })
+            } else {
+              this.$message({
+                message: response.message,
+                type: 'danger'
+              })
+            }
+          }).finally(() => {
+            this.rejectDialogVisible = false
+          })
+        } else {
+          return false
+        }
+      })
+    },
     auditPass(index, row, check) {
       row.route.isReimburse = check
       updateRoute(Object.assign({}, row.route)).then(response => {
@@ -189,6 +285,17 @@ export default {
           })
           this.list[this.editFormIndex] = Object.assign({}, this.editForm)
           this.editFormVisible = false
+        }
+      })
+    },
+    add(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          // 通过验证执行
+        } else {
+          // 验证失败执行
+          console.log('error submit!!')
+          return false
         }
       })
     }

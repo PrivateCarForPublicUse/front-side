@@ -73,3 +73,41 @@ export function getAuditUsers(params) {
     params
   })
 }
+
+// 用户注册
+export function userRegister(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/register',
+    method: 'post',
+    data
+  })
+}
+
+// 获取当前公司的用户
+export function getUsersInCompany() {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/Master/users',
+    method: 'get'
+  })
+}
+
+// 根据用户id获取用户信息
+export function getUserById(id) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/' + id,
+    method: 'get'
+  })
+}
+
+// 用户修改密码
+export function userChangePassword(data) {
+  return request({
+    baseURL: process.env.VUE_APP_BASE_API2,
+    url: '/user/change-password',
+    method: 'post',
+    data
+  })
+}

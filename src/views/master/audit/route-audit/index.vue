@@ -112,7 +112,9 @@ export default {
       editFormIndex: 0,
       editForm: {
       },
-      deleteFormVisible: false
+      deleteFormVisible: false,
+      editFormRules: {},
+      editLoading: false
     }
   },
   computed: {

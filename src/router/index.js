@@ -38,11 +38,27 @@ export const constantRoutes = [
     component: () => import('@/views/login/index'),
     hidden: true
   },
+  {
+    path: '/register',
+    component: () => import('@/views/login/register'),
+    hidden: true
+  },
 
   {
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
+  },
+  {
+    path: '/test',
+    component: Layout,
+    redirect: '/test',
+    children: [{
+      path: 'test',
+      name: 'test',
+      component: () => import('@/views/test/index'),
+      meta: { title: '测试', icon: 'dashboard' }
+    }]
   }
 ]
 // 异步挂载的路由
@@ -98,18 +114,43 @@ export const asyncRoutes = [
     redirect: '/mycar/carinfo',
     name: 'mycar',
     meta: { title: '我的车辆', icon: 'dashboard', roles: [-2] },
-    children: [{
-      path: 'carinfo',
-      name: 'Carinfo',
-      component: () => import('@/views/mycar/carinfo/index'),
-      meta: { title: '车辆信息', icon: 'dashboard', roles: [-2] }
-    }, {
-      path: 'carroute',
-      name: 'carroute',
-      component: () => import('@/views/mycar/carroute/index'),
-      meta: { title: '车辆行程', icon: 'dashboard', roles: [-2] }
-    }
+    children: [
+      {
+        path: 'carregister',
+        name: 'carregister',
+        component: () => import('@/views/mycar/carregister/index'),
+        meta: { title: '车辆注册', icon: 'dashboard', roles: [-2] }
+      }, {
+        path: 'carinfo',
+        name: 'Carinfo',
+        component: () => import('@/views/mycar/carinfo/index'),
+        meta: { title: '车辆信息', icon: 'dashboard', roles: [-2] }
+      }, {
+        path: 'carroute',
+        name: 'carroute',
+        component: () => import('@/views/mycar/carroute/index'),
+        meta: { title: '车辆行程', icon: 'dashboard', roles: [-2] }
+      }
     ]
+  },
+  {
+    path: '/myinfo',
+    component: Layout,
+    redirect: '/useraccount',
+    alwaysShow: true,
+    meta: { title: '我的信息', icon: 'dashboard', roles: [-2] },
+    children: [{
+      path: '/useraccount',
+      name: '我的信息',
+      component: () => import('@/views/account/index'),
+      meta: { title: '基本资料', icon: 'dashboard', roles: [-2] }
+    },
+    {
+      path: '/changePassword',
+      name: '修改密码',
+      component: () => import('@/views/account/changePassword'),
+      meta: { title: '修改密码', icon: 'dashboard', roles: [-2] }
+    }]
   },
   {
     path: '/audit',
@@ -122,7 +163,7 @@ export const asyncRoutes = [
         path: '/audit/user',
         name: '用户审核',
         component: () => import('@/views/master/audit/user-audit/index'),
-        meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1] }
+        meta: { title: '用户审核', icon: 'dashboard', roles: [0, 1], tag: true }
       },
       {
         path: '/audit/car',

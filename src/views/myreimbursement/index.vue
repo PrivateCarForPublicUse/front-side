@@ -113,9 +113,21 @@
       <el-table-column label="报销状态" align="center">
         <template slot-scope="scope">
           <el-tag
+            v-if="scope.row.isReimburse !== -1"
             size="medium"
             :type="scope.row.isReimburse | statusFilter"
           >{{ scope.row.isReimburse | statusWordsFilter }}</el-tag>
+          <el-tag v-else size="medium" :type="scope.row.isReimburse | statusFilter" @click="showMessage(scope.row)">审核失败</el-tag>
+          <!--          <el-popover-->
+          <!--            v-else-->
+          <!--            placement="top-start"-->
+          <!--            width="200"-->
+          <!--            trigger="hover"-->
+          <!--            @show="showMessage(scope.row)"-->
+          <!--          >-->
+          <!--            <p>{{ scope.row.message }}</p>-->
+          <!--            <el-button slot="reference">报销失败</el-button>-->
+          <!--          </el-popover>-->
         </template>
       </el-table-column>
     </el-table>
@@ -134,6 +146,7 @@
 
 <script>
 import { sendReimburseApplication, getMyRouteByDataModel } from '../../api/route'
+import { getMessageInfo } from '../../api/message'
 
 export default {
   filters: {
@@ -222,6 +235,9 @@ export default {
           return String(dataNews[item]).toLowerCase().indexOf(search) > -1 || search === null
         })
       })
+      // }).filter((data) => {
+      //   return data['isReimburse'] === 0 || data['isReimburse'] === 2
+      // })
     },
     total() {
       return this.tables.length
@@ -292,6 +308,29 @@ export default {
                 item.isReimburse = 2
               }
             })
+          })
+        }
+      })
+    },
+    showMessage(row) {
+      // 显示具体的信息
+      if (row.message) {
+        this.$alert(row.message, '反馈信息', {
+          confirmButtonText: '确定'
+        })
+        return
+      }
+      getMessageInfo({ table: 'route', id: row.routId }).then(response => {
+        if (response.code === 200) {
+          row.message = response.data.message
+          this.$alert(row.message, '反馈信息', {
+            confirmButtonText: '确定'
+            // callback: action => {
+            //   this.$message({
+            //     type: 'info',
+            //     message: `action: ${action}`
+            //   })
+            // }
           })
         }
       })
